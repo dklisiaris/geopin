@@ -1,4 +1,9 @@
 # Geopin
+---------------------------------------------------------------------------------------------------
+
+  NOTICE: This app is *under heavy development* and it is *not functional* yet.
+
+---------------------------------------------------------------------------------------------------
 
 Geopin is a small school project for the university of patras. An android app in which the user marks her favourite places on a map and stores them in database. Supports directions and reverse geocoding.
 

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">geopin</string>
+    <string name="app_name">Geopin</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="add_pin">Add Pin</string>
+    <string name="no_maps">Maps are not available.</string>
+    <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

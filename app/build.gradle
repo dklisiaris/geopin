@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "gr.upatras.ceid.geopin"
-        minSdkVersion 10
+        minSdkVersion 9
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -22,4 +22,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.google.maps.android:android-maps-utils:0.3+'
+    compile 'com.sothree.slidinguppanel:library:+'
+    compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.google.android.gms:play-services:+'
 }
