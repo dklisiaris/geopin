@@ -1,7 +1,7 @@
 package gr.upatras.ceid.geopin.db.models;
 
 public class Place {
-    private int _id;
+    private int id;
     private String title, description;
     double latitude ,longitude;
     private int category_id;
@@ -9,23 +9,14 @@ public class Place {
     public Place() {
     }
 
-    public Place(String title, int category_id, double latitude, double longitude) {
+    public Place(String title, double latitude, double longitude, int category_id) {
         this.title = title;
         this.latitude = latitude;
         this.longitude = longitude;
         this.category_id = category_id;
     }
 
-    public Place(int _id, String title, int category_id, double latitude, double longitude) {
-        this._id = _id;
-        this.title = title;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.category_id = category_id;
-    }
-
-    public Place(int _id, String title, String description, int category_id, double latitude, double longitude) {
-        this._id = _id;
+    public Place(String title, String description, double latitude, double longitude, int category_id) {
         this.title = title;
         this.description = description;
         this.latitude = latitude;
@@ -33,12 +24,29 @@ public class Place {
         this.category_id = category_id;
     }
 
-    public int get_id() {
-        return _id;
+    public Place(int id, String title, double latitude, double longitude, int category_id) {
+        this.id = id;
+        this.title = title;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.category_id = category_id;
     }
 
-    public void set_id(int _id) {
-        this._id = _id;
+    public Place(int id, String title, String description, double latitude, double longitude, int category_id) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.category_id = category_id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -79,5 +87,17 @@ public class Place {
 
     public void setCategory_id(int category_id) {
         this.category_id = category_id;
+    }
+
+    @Override
+    public String toString() {
+        return "Place{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", category_id=" + category_id +
+                '}';
     }
 }

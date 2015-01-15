@@ -4,10 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PointF;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -30,16 +33,23 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
+import org.fluttercode.datafactory.impl.DataFactory;
+import org.w3c.dom.Document;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import gr.upatras.ceid.geopin.db.DBHandler;
 import gr.upatras.ceid.geopin.db.models.Category;
+import gr.upatras.ceid.geopin.db.models.Place;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
 import gr.upatras.ceid.geopin.maps.DirectionsClient;
+import gr.upatras.ceid.geopin.maps.DirectionsInfo;
 import gr.upatras.ceid.geopin.maps.PlaceMarker;
 //import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner;
@@ -56,26 +66,29 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     private static final String STATE_NAV="nav";
 
-    private static final String[] DIRECTION_MODE_NAMES= {"Αυτοκίνητο","Πεζός","Λεωφορείο"};
-    private static final String[] DIRECTION_MODES_TYPES= {DirectionsClient.MODE_DRIVING,
+    private static final String[] DIRECTION_MODE_NAMES  = {"Αυτοκίνητο","Πεζός","Λεωφορείο"};
+    private static final String[] DIRECTION_MODES_TYPES = {DirectionsClient.MODE_DRIVING,
             DirectionsClient.MODE_WALKING,DirectionsClient.MODE_TRANSIT};
 
-    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
+//    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
 
-    protected String directionMode = DirectionsClient.MODE_DRIVING;
-    private GoogleMap map=null;
-    private OnLocationChangedListener mapLocationListener=null;
-    private LocationManager locMgr=null;
-    private Criteria crit=new Criteria();
-    private AlertDialog alert=null;
-    private Location currentLocation=null;
+    protected String directionMode                          = DirectionsClient.MODE_DRIVING;
+    private GoogleMap map                                   = null;
+    private OnLocationChangedListener mapLocationListener   = null;
+    private LocationManager locMgr                          = null;
+    private Criteria crit                                   = new Criteria();
+    private AlertDialog alert                               = null;
+    private Location currentLocation                        = null;
 
     protected ClusterManager<PlaceMarker> mClusterManager;
-//    protected ArrayList<Place> nearComps=null;
-    protected Polyline currentPolyline=null;
-    protected Marker selectedMarker=null;
-    protected SparseArray<String> sparse=null;
-    protected ArrayList<String> selectedCategories = null;
+    protected List<Place> loadedPlaces              = null;
+    protected Polyline currentPolyline              = null;
+    protected Marker selectedMarker                 = null;
+    protected SparseArray<String> sparse            = null;
+    protected ArrayList<String> selectedCategories  = null;
+
+    private DBHandler db;
+
     int selectedID;
 
     @Override
@@ -86,6 +99,8 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         if (readyToGo()) {
             setContentView(R.layout.map_fragment);
+
+            db = DBHandler.getInstance(this);
 
             SupportMapFragment mapFrag=
                     (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
@@ -169,12 +184,12 @@ public class MainMapActivity extends AbstractMapActivity implements
             }
             else
             {
-                Toast.makeText(this, "Δεν υπάρχει ενεργοποιημένη υπηρεσία εύρεσης τοποθεσίας.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this,  getResources().getString(R.string.no_location_service), Toast.LENGTH_LONG).show();
             }
         }
         else
         {
-            Toast.makeText(this, "Δεν υπάρχει υπηρεσία εύρεσης τοποθεσίας στη συσκευή σας.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getResources().getString(R.string.no_location_service_in_device), Toast.LENGTH_LONG).show();
         }
 
 		/*
@@ -194,9 +209,9 @@ public class MainMapActivity extends AbstractMapActivity implements
         //Toast.makeText(this, "Lat: "+currentLocation.getLatitude()+" Long: "+currentLocation.getLongitude(), Toast.LENGTH_LONG).show();
 
         if(currentLocation!=null){
-            // TODO new MarkerLoader().execute(currentLocation);
+            new MarkerLoader().execute(currentLocation);
         }
-        else Toast.makeText(this, "Η τοποθεσία σας δεν βρέθηκε. Ελέγξτε τις ρυθμίσεις gps.", Toast.LENGTH_LONG).show();
+        else Toast.makeText(this, getResources().getString(R.string.no_location_check_gps), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -222,14 +237,15 @@ public class MainMapActivity extends AbstractMapActivity implements
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.addPin:
+                Toast.makeText(this, "TODO add new pin functionality", Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.action_settings:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -249,11 +265,13 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public void activate(OnLocationChangedListener listener) {
+
         this.mapLocationListener=listener;
     }
 
     @Override
     public void deactivate() {
+
         this.mapLocationListener=null;
     }
 
@@ -296,32 +314,18 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     }
 
-    /**
-     * Called when the provider status changes. This method is called when
-     * a provider is unable to fetch a location or if the provider has recently
-     * become available after a period of unavailability.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     * @param status   {@link <LocationProvider>.OUT_OF_SERVICE} if the
-     *                 provider is out of service, and this is not expected to change in the
-     *                 near future; {@link <LocationProvider>.TEMPORARILY_UNAVAILABLE} if
-     *                 the provider is temporarily unavailable but is expected to be available
-     *                 shortly; and {@link <LocationProvider>.AVAILABLE} if the
-     *                 provider is currently available.
-     * @param extras   an optional Bundle which will contain provider specific
-     *                 status variables.
-     *                 <p/>
-     *                 <p> A number of common key/value pairs for the extras Bundle are listed
-     *                 below. Providers that use any of the keys on this list must
-     *                 provide the corresponding value as described below.
-     *                 <p/>
-     *                 <ul>
-     *                 <li> satellites - the number of satellites used to derive the fix
-     */
+    @Override
+    public void onProviderEnabled(String provider) {
+        //unused
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        //unused
+    }
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-
+        //unused
     }
 
     @Override
@@ -340,13 +344,27 @@ public class MainMapActivity extends AbstractMapActivity implements
             }
         }
         //Toast.makeText(this, "Activated: "+activated, Toast.LENGTH_LONG).show();
-        // clear all item when selected cats are changed TODO mClusterManager.clearItems();
+
+        // Clear all item when selected cats are changed
+        mClusterManager.clearItems();
+
         //new MarkerLoader().execute(currentLocation);
-        // call resume to reload items TODO onResume();
+
+
+        // call resume to reload items
+        onResume();
+
+//        DataFactory df = new DataFactory();
+//        Toast.makeText(this, "DF: "+df.getName()+" "+df.getBusinessName()+" "+df.getRandomWord()+" "+df.getRandomChars(8), Toast.LENGTH_LONG).show();
+
+//        db.generateAndStorePlaces(5, 37.9756556, 23.7339464, 10000 );
+//        List<Place> places = db.getAllPlaces();
+//        for(Place p : places){
+//            Log.d("Found Place", p.toString());
+//        }
     }
 
     private void initCategorySpinner(){
-        DBHandler db        = DBHandler.getInstance(this);
         List<Category> cats = db.getAllCategories();
         List<String> items  = new ArrayList<String>();
 
@@ -367,7 +385,8 @@ public class MainMapActivity extends AbstractMapActivity implements
             sparse.put(i+1,Integer.toString(cats.get(i).getId()));
         }
         MultiSpinner multiSpinner = (MultiSpinner) findViewById(R.id.multi_spinner);
-        multiSpinner.setItems(items,getResources().getString(R.string.all_categories),this);
+        multiSpinner.setItems(items, getResources().getString(R.string.all_categories), this);
+
     }
 
     @Override
@@ -434,32 +453,132 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
 
-    /**
-     * Called when the provider is enabled by the user.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    /**
-     * Called when the provider is disabled by the user. If requestLocationUpdates
-     * is called on an already disabled provider, this method is called
-     * immediately.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
     @Override
     public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    protected class MarkerLoader extends AsyncTask<Location,PlaceMarker,List<PlaceMarker>>{
+        DBHandler db;
+        List<PlaceMarker> placeMarkers = new ArrayList<>();
+
+        double t1,t2;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setSupportProgressBarIndeterminateVisibility(true);
+            t1 = System.nanoTime();
+        }
+
+        @Override
+        protected List<PlaceMarker> doInBackground(Location... loc) {
+            double lat = loc[0].getLatitude();
+            double lon = loc[0].getLongitude();
+
+            try{
+                db = DBHandler.getInstance(getApplicationContext());
+                if(selectedCategories!=null){
+                    loadedPlaces = db.getPlacesByCategoryIds(selectedCategories);
+                }else{
+                    loadedPlaces = db.getAllPlaces();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }finally{
+                db.close();
+            }
+
+            //List<Marker> markers = new ArrayList<Marker>();
+
+            if(loadedPlaces!=null && loadedPlaces.size()>0){
+                for(Place p : loadedPlaces){
+                    PlaceMarker m = new PlaceMarker(p.getId(), p.getTitle(),
+                            p.getDescription(),
+                            p.getLatitude(),
+                            p.getLongitude());
+                    //mClusterManager.addItem(m);
+                    //publishProgress(m);
+                    placeMarkers.add(m);
+					/*
+					Marker m = map.addMarker(new MarkerOptions()
+						.position(new LatLng(p.getLatitude(),p.getLongitude()))
+						.title(p.getName())
+						.snippet(p.getAddress() +", "+p.getArea()));
+					markers.add(m);
+					*/
+                }
+            }
+            //Log.d("Num of markers",""+loadedPlaces.size());
+
+            return placeMarkers;
+        }
+
+        protected void onProgressUpdate(PlaceMarker... companyMarkers){
+            //mClusterManager.addItem(companyMarkers[0]);
+			/*
+			map.addMarker(new MarkerOptions()
+				.position(companyMarkers[0].getPosition())
+				.title(companyMarkers[0].getTitle())
+				.snippet(companyMarkers[0].getSnippet()));
+			*/
+        }
+
+        protected void onPostExecute(List<PlaceMarker> placeMarkers){
+            if(placeMarkers!=null && placeMarkers.size()>0){
+                for(PlaceMarker cm : placeMarkers){
+                    mClusterManager.addItem(cm);
+                }
+            }
+            setSupportProgressBarIndeterminateVisibility(false);
+            mClusterManager.cluster();
+            t2 = (System.nanoTime() - t1)/1000000.0;
+            //Log.d("---- Marker Loader completed in ----", Double.toString(t2));
+        }
+
+
+
+    }
+
+
+    protected class DirectionsLoader extends AsyncTask<LatLng,Void,DirectionsInfo> {
+
+        @Override
+        protected DirectionsInfo doInBackground(LatLng... params) {
+            DirectionsClient md = new DirectionsClient();
+
+            Document doc = md.getDocument(params[0], params[1], directionMode);
+            ArrayList<LatLng> directionPoint = md.getDirection(doc);
+            PolylineOptions rectLine = new PolylineOptions().width(3).color(Color.RED);
+
+            for(int i = 0 ; i < directionPoint.size() ; i++) {
+                rectLine.add(directionPoint.get(i));
+            }
+
+            DirectionsInfo directionsInfo = new DirectionsInfo(
+                    null,md.getDurationValue(doc),
+                    null,md.getDistanceValue(doc),
+                    rectLine);
+            return directionsInfo;
+        }
+
+        protected void onPostExecute(DirectionsInfo directionsInfo){
+            if(currentPolyline!=null){
+                currentPolyline.remove();
+            }
+            currentPolyline = map.addPolyline(directionsInfo.getPolylineOptions());
+
+            double dist = (double)directionsInfo.getDistanceValue() * 1.0/1000.0;
+            int durat = (int)Math.round(directionsInfo.getDurationValue() * 1.0/60.0);
+
+            if(selectedMarker!=null){
+                selectedMarker.hideInfoWindow();
+                String snip = selectedMarker.getSnippet();
+
+                selectedMarker.setSnippet(snip+ ", Απόσταση: "+String.format(Locale.ENGLISH, "%.1f", dist)+" χλμ. Χρόνος Άφιξης: "+
+                        durat+" λεπτα");
+                selectedMarker.showInfoWindow();
+            }
+        }
 
     }
 

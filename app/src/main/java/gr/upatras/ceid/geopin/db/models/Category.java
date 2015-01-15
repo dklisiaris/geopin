@@ -7,10 +7,10 @@ public class Category {
     public Category() {
     }
 
-    public Category(int id, String color, String name) {
+    public Category(int id, String name, String color) {
         this.id = id;
-        this.color = color;
         this.name = name;
+        this.color = color;
     }
 
     public int getId() {

@@ -26,4 +26,5 @@ dependencies {
     compile 'com.sothree.slidinguppanel:library:+'
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.google.android.gms:play-services:+'
+    compile 'org.fluttercode.datafactory:datafactory:0.8'
 }

@@ -4,6 +4,11 @@
     <string name="add_pin">Προσθήκη σημείου</string>
     <string name="no_maps">Οι χάρτες δεν είναι διαθέσιμοι.</string>
     <string name="all_categories">Όλες οι κατηγορίες</string>
-
+    <string name="no_location_check_gps">Η τοποθεσία σας δεν βρέθηκε. Ελέγξτε τις ρυθμίσεις gps.</string>
+    <string name="no_location_service">Δεν υπάρχει ενεργοποιημένη υπηρεσία εύρεσης τοποθεσίας.</string>
+    <string name="no_location_service_in_device">Δεν υπάρχει υπηρεσία εύρεσης τοποθεσίας στη συσκευή σας.</string>
+    <string name="by_car">Αυτοκίνητο</string>
+    <string name="by_foot">Πεζός</string>
+    <string name="by_transport">Λεωφορείο</string>
 
 </resources>

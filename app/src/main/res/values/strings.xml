@@ -7,6 +7,12 @@
     <string name="add_pin">Add Pin</string>
     <string name="no_maps">Maps are not available.</string>
     <string name="all_categories">All categories</string>
+    <string name="no_location_check_gps">Location didn\'t found. Check your gps settings.</string>
+    <string name="no_location_service">There\'s no activated location detection service.</string>
+    <string name="no_location_service_in_device">There\'s no location services in your device.</string>
+    <string name="by_car">Car</string>
+    <string name="by_foot">By foot</string>
+    <string name="by_transport">Transport</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

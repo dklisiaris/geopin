@@ -8,10 +8,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.fluttercode.datafactory.impl.DataFactory;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import gr.upatras.ceid.geopin.db.models.Category;
+import gr.upatras.ceid.geopin.db.models.Place;
 
 public class DBHandler extends SQLiteOpenHelper implements DBInterface {
     private static final int DATABASE_VERSION = 1;
@@ -102,11 +106,122 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
     }
 
     /**************************************************************************************
+     ******************************* PLACES CRUD ******************************************
+     **************************************************************************************/
+
+    /**
+     * Returns a List of type Place with all places.
+     * @return List of type Place with all places
+     */
+    public List<Place> getAllPlaces(){
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_PLACES;
+        return getPlacesWithRawQuery(selectQuery);
+    }
+
+    /**
+     * Returns a List of type Place with places in multiple categories.
+     * @param category_ids A string (Be careful!: STRING NOT INT) list with ids of selected categories.
+     * @return List of type Place with places in multiple categories.
+     */
+    public List<Place> getPlacesByCategoryIds(List<String> category_ids){
+        // Select only places specific categories.
+        String whereCategories = "";
+        if(category_ids!=null){
+            boolean isFirst=true;
+            for(String cid : category_ids){
+                if(isFirst){
+                    whereCategories += "( "+ COLUMN_CATEGORY_ID +" = '"+cid+"'";
+                    isFirst=false;
+                }
+                else{
+                    whereCategories += " OR "+ COLUMN_CATEGORY_ID + " = '"+cid+"'";
+                }
+            }
+            whereCategories += " )";
+        }
+        String selectQuery = "SELECT  * FROM " + TABLE_PLACES +" WHERE "+ whereCategories;
+        return getPlacesWithRawQuery(selectQuery);
+    }
+
+    /**
+     * Returns a List of type Place with places in a specific category.
+     * @param category_id The id of selected category.
+     * @return List of places in a specific category.
+     */
+    public List<Place> getPlacesByCategoryId(int category_id){
+        // Select only places in a specific category.
+        String selectQuery = "SELECT  * FROM " + TABLE_PLACES +" WHERE "+ COLUMN_CATEGORY_ID +" = " + category_id;
+        return getPlacesWithRawQuery(selectQuery);
+    }
+
+    /**
+     * Returns a List of type Place with all places selected based on the provided raw select query.
+     * This method is the method which actually performs query on database.
+     * @param rawQuery The select clause. It should be complete and carefully prepared.
+     * @return List of type Place with all places selected
+     */
+    private List<Place> getPlacesWithRawQuery(String rawQuery){
+        List<Place> places = new ArrayList<>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(rawQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Place place = new Place();
+                place.setId(cursor.getInt(0));
+                place.setTitle(cursor.getString(1));
+                place.setDescription(cursor.getString(2));
+                place.setLatitude(cursor.getDouble(3));
+                place.setLongitude(cursor.getDouble(4));
+                place.setCategory_id(Integer.parseInt(cursor.getString(5)));
+
+                // Adding place to list
+                places.add(place);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        // return category list
+        return places;
+    }
+
+    // Insert a new Place or update an existing one
+    public void insertOrReplacePlace(Place p) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        if(p.getId()>0)
+            values.put(DBInterface.COLUMN_ID, p.getId());
+        values.put(DBInterface.COLUMN_TITLE, p.getTitle()); // Place Name
+        values.put(DBInterface.COLUMN_DESCRIPTION, p.getDescription()); // Place Descr
+        values.put(DBInterface.COLUMN_LATITUDE, p.getLatitude());
+        values.put(DBInterface.COLUMN_LONGITUDE, p.getLongitude());
+        values.put(DBInterface.COLUMN_CATEGORY_ID, p.getCategory_id());
+
+        // updating row
+        db.replace(DBInterface.TABLE_PLACES,null, values);
+
+        db.close();
+    }
+
+    // Delete a Place by id
+    public void deletePlace(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DBInterface.TABLE_PLACES, DBInterface.COLUMN_ID + " = ?", new String[] { Integer.toString(id) });
+        db.close();
+    }
+
+
+    /**************************************************************************************
      ******************************* CATEGORIES CRUD **************************************
      **************************************************************************************/
 
     /**
-     * Returns an List of type Category with all categories.
+     * Returns a List of type Category with all categories.
      * @return List of type Category with all categories
      */
     public List<Category> getAllCategories(){
@@ -116,13 +231,13 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
     }
 
     /**
-     * Returns an List of type Category with all categories selected based on the provided raw select query.
+     * Returns a List of type Category with all categories selected based on the provided raw select query.
      * This method is the method which actually performs query on database.
      * @param rawQuery The select clause. It should be complete and carefully prepared.
      * @return List of type Category with all categories selected
      */
     private List<Category> getCategoriesWithRawQuery(String rawQuery){
-        List<Category> categories = new ArrayList<Category>();
+        List<Category> categories = new ArrayList<>();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(rawQuery, null);
@@ -131,7 +246,7 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         if (cursor.moveToFirst()) {
             do {
                 Category category = new Category();
-                category.setId(Integer.parseInt(cursor.getString(0)));
+                category.setId(cursor.getInt(0));
                 category.setName(cursor.getString(1));
                 category.setColor(cursor.getString(2));
 
@@ -153,7 +268,7 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         ContentValues values = new ContentValues();
         values.put(DBInterface.COLUMN_ID, c.getId());
         values.put(DBInterface.COLUMN_NAME, c.getName()); // Category Name
-        values.put(DBInterface.COLUMN_COLOR, c.getColor()); // Category Phone
+        values.put(DBInterface.COLUMN_COLOR, c.getColor()); // Category Color
 
         // updating row
         db.replace(DBInterface.TABLE_CATEGORIES,null, values);
@@ -166,5 +281,52 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(DBInterface.TABLE_CATEGORIES, DBInterface.COLUMN_ID + " = ?", new String[] { Integer.toString(category_id) });
         db.close();
+    }
+
+    /**
+     * This is a development helper function for seeding the db.
+     * It generates massive amounts of places with fake data and inserts then to database.
+     * The x0 and y0 are longitude and latitude respectively, the new places will be generated
+     * in a circle around them.
+     * @param places_num The number of placed to generate.
+     * @param latitude The latitude at the center of circle
+     * @param longitude The longitude at the center of circle
+     * @param radius The radious of circle in meters.
+     */
+    public void generateAndStorePlaces(int places_num, double latitude, double longitude, double radius ){
+        DataFactory df              = new DataFactory();
+        Random randomGenerator      = new Random();
+        List<Category> categories   = getAllCategories();
+        Category randomCategory     = categories.get(randomGenerator.nextInt(categories.size()));
+
+        double radiusInDegrees      = radius / 111000f; // Convert radius from meters to degrees (near the equator)
+
+        while(--places_num >= 0) {
+            /* u and v are random number between 0 and 1 */
+            double u = randomGenerator.nextDouble();
+            double v = randomGenerator.nextDouble();
+
+            /* Random point inside radious algorithm. Credits here: http://gis.stackexchange.com/questions/25877/ */
+            double w = radiusInDegrees * Math.sqrt(u);
+            double t = 2 * Math.PI * v;
+            double x = w * Math.cos(t);
+            double y = w * Math.sin(t);
+
+            // Adjust the x-coordinate for the shrinking of the east-west distances
+            double new_x = x / Math.cos(latitude);
+
+            double randomLongitude = new_x + longitude;
+            double randomLatitude = y + latitude;
+
+            Place p = new Place(df.getName() + " - " + df.getBusinessName(),
+                    df.getRandomWord() + " " + df.getRandomText(35, 55) + " " + df.getRandomWord(),
+                    randomLatitude,
+                    randomLongitude,
+                    randomCategory.getId());
+
+            insertOrReplacePlace(p);
+            Log.d("Generated Place", p.toString());
+            Log.d("Iteration #", Integer.toString(places_num));
+        }
     }
 }
