@@ -6,6 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="add_pin">Add Pin</string>
     <string name="no_maps">Maps are not available.</string>
+    <string name="all_categories">All categories</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

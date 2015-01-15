@@ -36,10 +36,13 @@ import com.google.maps.android.clustering.ClusterManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import gr.upatras.ceid.geopin.db.DBHandler;
+import gr.upatras.ceid.geopin.db.models.Category;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
 import gr.upatras.ceid.geopin.maps.DirectionsClient;
 import gr.upatras.ceid.geopin.maps.PlaceMarker;
 //import gr.upatras.ceid.geopin.widgets.MultiSpinner;
+import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner.MultiSpinnerListener;
 
 
@@ -321,29 +324,50 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     }
 
+    @Override
+    public void onItemsSelected(boolean[] selected) {
+        selectedCategories = new ArrayList<String>();
+		/* If -all categories- is selected we set selectedCategories null. this value will be used in query building. */
+        if(selected[0]){
+            selectedCategories=null;
+        }
+		/* Else we add the ids of selected categories to array list */
+        else{
+            for(int i=1;i<selected.length;i++){
+                if(selected[i]){
+                    selectedCategories.add(sparse.get(i));
+                }
+            }
+        }
+        //Toast.makeText(this, "Activated: "+activated, Toast.LENGTH_LONG).show();
+        // clear all item when selected cats are changed TODO mClusterManager.clearItems();
+        //new MarkerLoader().execute(currentLocation);
+        // call resume to reload items TODO onResume();
+    }
+
     private void initCategorySpinner(){
-//        DBHandler db = DBHandler.getInstance(this);
-//        ArrayList<Category> cats = db.getCategories("cat_parent_id is not null");
-//        ArrayList<String> items=new ArrayList<String>();
-//
-//        if(sparse==null)
-//            sparse = new SparseArray<String>();
-//
-//		/* We add an extra item which represents ALL categories */
-//        items.add("Όλες οι κατηγορίες");
-//		/* We also put it in first (zero) position in sparse array*/
-//        sparse.put(0, "0");
-//
-//		/*
-//		 * BE CAREFUL! We count from 0 so every category gets added to items
-//		 * but we put them in sparse shifted by one because zero position is taken by all categories item.
-//		 * */
-//        for (int i=0; i<cats.size(); i++) {
-//            items.add(cats.get(i).getCat_name());
-//            sparse.put(i+1,Integer.toString(cats.get(i).getCat_id()));
-//        }
-//        MultiSpinner multiSpinner = (MultiSpinner) findViewById(R.id.multi_spinner);
-//        multiSpinner.setItems(items,"Όλες οι κατηγορίες",this);
+        DBHandler db        = DBHandler.getInstance(this);
+        List<Category> cats = db.getAllCategories();
+        List<String> items  = new ArrayList<String>();
+
+        if(sparse==null)
+            sparse = new SparseArray<String>();
+
+		/* We add an extra item which represents ALL categories */
+        items.add(getResources().getString(R.string.all_categories));
+		/* We also put it in first (zero) position in sparse array*/
+        sparse.put(0, "0");
+
+		/*
+		 * BE CAREFUL! We count from 0 so every category gets added to items
+		 * but we put them in sparse shifted by one because zero position is taken by all categories item.
+		 * */
+        for (int i=0; i<cats.size(); i++) {
+            items.add(cats.get(i).getName());
+            sparse.put(i+1,Integer.toString(cats.get(i).getId()));
+        }
+        MultiSpinner multiSpinner = (MultiSpinner) findViewById(R.id.multi_spinner);
+        multiSpinner.setItems(items,getResources().getString(R.string.all_categories),this);
     }
 
     @Override
@@ -439,8 +463,4 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     }
 
-    @Override
-    public void onItemsSelected(boolean[] selected) {
-
-    }
 }

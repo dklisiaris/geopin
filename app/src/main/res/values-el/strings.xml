@@ -3,6 +3,7 @@
 
     <string name="add_pin">Προσθήκη σημείου</string>
     <string name="no_maps">Οι χάρτες δεν είναι διαθέσιμοι.</string>
+    <string name="all_categories">Όλες οι κατηγορίες</string>
 
 
 </resources>
