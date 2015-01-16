@@ -13,6 +13,8 @@
     <string name="by_car">Car</string>
     <string name="by_foot">By foot</string>
     <string name="by_transport">Transport</string>
+    <string name="hide_pins">Hide Pins</string>
+    <string name="show_pins">Show Pins</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

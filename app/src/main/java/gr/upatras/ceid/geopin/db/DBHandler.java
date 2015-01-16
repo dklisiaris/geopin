@@ -297,11 +297,11 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         DataFactory df              = new DataFactory();
         Random randomGenerator      = new Random();
         List<Category> categories   = getAllCategories();
-        Category randomCategory     = categories.get(randomGenerator.nextInt(categories.size()));
-
         double radiusInDegrees      = radius / 111000f; // Convert radius from meters to degrees (near the equator)
 
         while(--places_num >= 0) {
+            Category randomCategory = categories.get(randomGenerator.nextInt(categories.size()));
+
             /* u and v are random number between 0 and 1 */
             double u = randomGenerator.nextDouble();
             double v = randomGenerator.nextDouble();

@@ -29,13 +29,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import org.fluttercode.datafactory.impl.DataFactory;
 import org.w3c.dom.Document;
@@ -62,7 +67,7 @@ public class MainMapActivity extends AbstractMapActivity implements
         ClusterManager.OnClusterInfoWindowClickListener<PlaceMarker>,
         ClusterManager.OnClusterItemClickListener<PlaceMarker>,
         ClusterManager.OnClusterItemInfoWindowClickListener<PlaceMarker>,
-        MultiSpinnerListener{
+        MultiSpinnerListener, OnMapClickListener, OnMapLongClickListener{
 
     private static final String STATE_NAV="nav";
 
@@ -85,6 +90,7 @@ public class MainMapActivity extends AbstractMapActivity implements
     protected Polyline currentPolyline              = null;
     protected Marker selectedMarker                 = null;
     protected SparseArray<String> sparse            = null;
+    protected SparseArray<Float> colors             = null;
     protected ArrayList<String> selectedCategories  = null;
 
     private DBHandler db;
@@ -131,9 +137,14 @@ public class MainMapActivity extends AbstractMapActivity implements
             map.getUiSettings().setMyLocationButtonEnabled(false);
 
             mClusterManager = new ClusterManager<PlaceMarker>(this, map);
+            mClusterManager.setRenderer(new PlaceRenderer());
+
             map.setOnCameraChangeListener(mClusterManager);
             map.setOnMarkerClickListener(mClusterManager);
             map.setOnInfoWindowClickListener(this);
+            map.setOnMapClickListener(this);
+            map.setOnMapLongClickListener(this);
+
             mClusterManager.setOnClusterClickListener(this);
             mClusterManager.setOnClusterInfoWindowClickListener(this);
             mClusterManager.setOnClusterItemClickListener(this);
@@ -241,6 +252,9 @@ public class MainMapActivity extends AbstractMapActivity implements
             case R.id.addPin:
                 Toast.makeText(this, "TODO add new pin functionality", Toast.LENGTH_LONG).show();
                 return true;
+            case R.id.showHide:
+                Toast.makeText(this, "TODO add show/hide functionality", Toast.LENGTH_LONG).show();
+                return true;
             case R.id.action_settings:
                 return true;
             default:
@@ -295,6 +309,16 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
     @Override
+    public void onMapClick(LatLng point) {
+        Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onMapLongClick(LatLng point) {
+        Toast.makeText(this, "long pressed, point=" + point, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
     public boolean onClusterClick(Cluster<PlaceMarker> placeMarkerCluster) {
         return false;
     }
@@ -306,6 +330,20 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public boolean onClusterItemClick(PlaceMarker placeMarker) {
+        if(selectedMarker != null)
+            selectedMarker.remove();
+        selectedMarker = map.addMarker(new MarkerOptions()
+                .position(placeMarker.getPosition())
+                .title(placeMarker.getTitle())
+                .snippet(placeMarker.getDescription())
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        selectedMarker.showInfoWindow();
+        selectedID=placeMarker.getId();
+
+        LatLng from = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+        LatLng[] fromTo = {from, placeMarker.getPosition()};
+        new DirectionsLoader().execute(fromTo);
+
         return false;
     }
 
@@ -364,12 +402,18 @@ public class MainMapActivity extends AbstractMapActivity implements
 //        }
     }
 
+    /**
+     * Populates the multiple choice spinner with all categories plus the all-categories choice.
+     * It also creates a sparse array with colors mapped to category ids to provide easy color access to markers.
+     */
     private void initCategorySpinner(){
         List<Category> cats = db.getAllCategories();
         List<String> items  = new ArrayList<String>();
 
         if(sparse==null)
             sparse = new SparseArray<String>();
+        if(colors==null)
+            colors = new SparseArray<Float>();
 
 		/* We add an extra item which represents ALL categories */
         items.add(getResources().getString(R.string.all_categories));
@@ -381,8 +425,14 @@ public class MainMapActivity extends AbstractMapActivity implements
 		 * but we put them in sparse shifted by one because zero position is taken by all categories item.
 		 * */
         for (int i=0; i<cats.size(); i++) {
-            items.add(cats.get(i).getName());
-            sparse.put(i+1,Integer.toString(cats.get(i).getId()));
+            Category c = cats.get(i);
+            items.add(c.getName());
+            sparse.put(i+1,Integer.toString(c.getId()));
+
+            int color = Color.parseColor(c.getColor());
+            float[] hsv = new float[3];
+            Color.colorToHSV (color, hsv);
+            colors.put(c.getId(), hsv[0]);
         }
         MultiSpinner multiSpinner = (MultiSpinner) findViewById(R.id.multi_spinner);
         multiSpinner.setItems(items, getResources().getString(R.string.all_categories), this);
@@ -495,7 +545,8 @@ public class MainMapActivity extends AbstractMapActivity implements
                     PlaceMarker m = new PlaceMarker(p.getId(), p.getTitle(),
                             p.getDescription(),
                             p.getLatitude(),
-                            p.getLongitude());
+                            p.getLongitude(),
+                            p.getCategory_id());
                     //mClusterManager.addItem(m);
                     //publishProgress(m);
                     placeMarkers.add(m);
@@ -578,6 +629,24 @@ public class MainMapActivity extends AbstractMapActivity implements
                         durat+" λεπτα");
                 selectedMarker.showInfoWindow();
             }
+        }
+
+    }
+
+    /**
+     * Custom renderer to enable the use of custom colors.
+     */
+    protected class PlaceRenderer extends DefaultClusterRenderer<PlaceMarker> {
+        public PlaceRenderer() {
+            super(getApplicationContext(), map, mClusterManager);
+        }
+
+        @Override
+        protected void onBeforeClusterItemRendered(PlaceMarker placeMarker, MarkerOptions markerOptions) {
+
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(colors.get(placeMarker.getCategory_id())));
+
+
         }
 
     }

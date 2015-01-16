@@ -10,5 +10,7 @@
     <string name="by_car">Αυτοκίνητο</string>
     <string name="by_foot">Πεζός</string>
     <string name="by_transport">Λεωφορείο</string>
+    <string name="hide_pins">Καθαρισμός Χάρτη</string>
+    <string name="show_pins">Εμφάνιση Σημείων</string>
 
 </resources>
