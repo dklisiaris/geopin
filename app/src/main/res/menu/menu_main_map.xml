@@ -9,7 +9,7 @@
         android:title="@string/add_pin"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/showHide"
-        android:icon="@drawable/ic_action_action_visibility_off"
+        android:icon="@drawable/ic_action_action_visibility"
         android:title="@string/hide_pins"
         app:showAsAction="ifRoom|withText"/>
 </menu>

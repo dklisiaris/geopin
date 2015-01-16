@@ -12,5 +12,6 @@
     <string name="by_transport">Λεωφορείο</string>
     <string name="hide_pins">Καθαρισμός Χάρτη</string>
     <string name="show_pins">Εμφάνιση Σημείων</string>
+    <string name="tap_to_pin">Παρακαλόυμε πατήστε στο μέρος που θέλετε να προσθέσετε σημείο.</string>
 
 </resources>

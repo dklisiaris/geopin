@@ -13,10 +13,12 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -95,7 +97,9 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     private DBHandler db;
 
-    int selectedID;
+    private boolean isClear = false;
+    private boolean expectingLocation = false;
+    private int selectedID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,7 +223,7 @@ public class MainMapActivity extends AbstractMapActivity implements
         //drawCircle();
         //Toast.makeText(this, "Lat: "+currentLocation.getLatitude()+" Long: "+currentLocation.getLongitude(), Toast.LENGTH_LONG).show();
 
-        if(currentLocation!=null){
+        if(currentLocation!=null && isClear==false){
             new MarkerLoader().execute(currentLocation);
         }
         else Toast.makeText(this, getResources().getString(R.string.no_location_check_gps), Toast.LENGTH_LONG).show();
@@ -244,21 +248,77 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
     @Override
+    public boolean onPrepareOptionsMenu (Menu menu) {
+        MenuItem visibility = menu.findItem(R.id.showHide);
+        if (isClear) {
+            visibility.setIcon(R.drawable.ic_action_action_visibility_off);
+            visibility.setTitle(R.string.show_pins);
+        }
+        else {
+            visibility.setIcon(R.drawable.ic_action_action_visibility);
+            visibility.setTitle(R.string.hide_pins);
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.addPin:
-                Toast.makeText(this, "TODO add new pin functionality", Toast.LENGTH_LONG).show();
+                enableLocationCapture();
                 return true;
             case R.id.showHide:
-                Toast.makeText(this, "TODO add show/hide functionality", Toast.LENGTH_LONG).show();
+                togglePinsVisibility();
                 return true;
             case R.id.action_settings:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void enableLocationCapture(){
+        expectingLocation = true;
+
+        final Toast tag = Toast.makeText(this, getResources().getString(R.string.tap_to_pin), Toast.LENGTH_SHORT );
+        tag.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+
+        tag.show();
+
+        // Countdown with intervals to show toast more time(about 10s)
+        new CountDownTimer(9000, 1000)
+        {
+            public void onTick(long millisUntilFinished) {tag.show();}
+            public void onFinish() {tag.show();}
+        }.start();
+    }
+
+    public void togglePinsVisibility(){
+        //toggle isClear bool
+        isClear=!isClear;
+
+        if(!isClear){
+            // call resume to reload items
+            onResume();
+
+        }
+        else{
+            // Clear all items.
+            mClusterManager.clearItems();
+
+            // Recluster with no items, so the map will be empty
+            mClusterManager.cluster();
+        }
+
+        // Invalidate menu.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            invalidateOptionsMenu();
+        }
+        else{
+            supportInvalidateOptionsMenu();
         }
     }
 
@@ -310,7 +370,11 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public void onMapClick(LatLng point) {
-        Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
+        if(expectingLocation){
+            Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
+            expectingLocation=false;
+        }
+
     }
 
     @Override
@@ -583,7 +647,7 @@ public class MainMapActivity extends AbstractMapActivity implements
             setSupportProgressBarIndeterminateVisibility(false);
             mClusterManager.cluster();
             t2 = (System.nanoTime() - t1)/1000000.0;
-            //Log.d("---- Marker Loader completed in ----", Double.toString(t2));
+            Log.d("---- Marker Loader completed in ----", Double.toString(t2));
         }
 
 
