@@ -2,6 +2,8 @@
 <resources>
 
     <string name="add_pin">Προσθήκη σημείου</string>
+    <string name="edit_pin">Επεξεργασία Σημείου</string>
+    <string name="placeholder">Lorem ipsum dolor sit amet.</string>
     <string name="no_maps">Οι χάρτες δεν είναι διαθέσιμοι.</string>
     <string name="all_categories">Όλες οι κατηγορίες</string>
     <string name="no_location_check_gps">Η τοποθεσία σας δεν βρέθηκε. Ελέγξτε τις ρυθμίσεις gps.</string>
@@ -13,5 +15,12 @@
     <string name="hide_pins">Καθαρισμός Χάρτη</string>
     <string name="show_pins">Εμφάνιση Σημείων</string>
     <string name="tap_to_pin">Παρακαλόυμε πατήστε στο μέρος που θέλετε να προσθέσετε σημείο.</string>
+    <string name="cancel">Άκυρο</string>
+    <string name="save">Αποθήκευση</string>
+    <string name="title">Τίτλος</string>
+    <string name="title_hint">Εισάγετε τίτλο...</string>
+    <string name="description">Περιγραφή</string>
+    <string name="description_hint">Εισάγετε περιγραφή...</string>
+    <string name="category">Κατηγορία</string>
 
 </resources>

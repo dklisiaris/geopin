@@ -1,9 +1,11 @@
 package gr.upatras.ceid.geopin;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Criteria;
@@ -18,6 +20,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,9 +54,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
+import de.keyboardsurfer.android.widget.crouton.Configuration;
+
 import gr.upatras.ceid.geopin.db.DBHandler;
 import gr.upatras.ceid.geopin.db.models.Category;
 import gr.upatras.ceid.geopin.db.models.Place;
+import gr.upatras.ceid.geopin.dialogs.EditPinDialog;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
 import gr.upatras.ceid.geopin.maps.DirectionsClient;
 import gr.upatras.ceid.geopin.maps.DirectionsInfo;
@@ -241,6 +249,13 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Crouton.cancelAllCroutons();
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main_map, menu);
@@ -283,17 +298,22 @@ public class MainMapActivity extends AbstractMapActivity implements
     public void enableLocationCapture(){
         expectingLocation = true;
 
-        final Toast tag = Toast.makeText(this, getResources().getString(R.string.tap_to_pin), Toast.LENGTH_SHORT );
-        tag.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+        final Crouton crouton = Crouton.makeText(this, R.string.tap_to_pin, new Style.Builder()
+                .setBackgroundColorValue(getResources().getColor(R.color.purple)).setHeight(getActionbarHeight()).build())
+                .setConfiguration(new Configuration.Builder().setDuration(Configuration.DURATION_INFINITE).build());
+        crouton.show();
 
-        tag.show();
+//        final Toast tag = Toast.makeText(this, getResources().getString(R.string.tap_to_pin), Toast.LENGTH_SHORT );
+//        tag.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+//
+//        tag.show();
 
         // Countdown with intervals to show toast more time(about 10s)
-        new CountDownTimer(9000, 1000)
-        {
-            public void onTick(long millisUntilFinished) {tag.show();}
-            public void onFinish() {tag.show();}
-        }.start();
+//        new CountDownTimer(9000, 1000)
+//        {
+//            public void onTick(long millisUntilFinished) {tag.show();}
+//            public void onFinish() {tag.show();}
+//        }.start();
     }
 
     public void togglePinsVisibility(){
@@ -372,7 +392,9 @@ public class MainMapActivity extends AbstractMapActivity implements
     public void onMapClick(LatLng point) {
         if(expectingLocation){
             Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
+            Crouton.cancelAllCroutons();
             expectingLocation=false;
+            new EditPinDialog(this).show();
         }
 
     }
@@ -713,6 +735,29 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         }
 
+    }
+
+    public int getActionbarHeight(){
+
+        // Calculate ActionBar height
+        int actionBarHeight = 100;
+        TypedValue tv = new TypedValue();
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB)
+        {
+            if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+
+            Log.d("1 ab size", ": "+actionBarHeight);
+        }
+        else if(getTheme().resolveAttribute(R.attr.actionBarSize, tv, true))
+        {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+            Log.d("2 ab size", ": "+actionBarHeight);
+        }
+
+        Log.d("Final ab size", ": "+actionBarHeight);
+        return actionBarHeight;
     }
 
 }
