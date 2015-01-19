@@ -22,5 +22,7 @@
     <string name="description">Περιγραφή</string>
     <string name="description_hint">Εισάγετε περιγραφή...</string>
     <string name="category">Κατηγορία</string>
+    <string name="title_required">Ο τίτλος δεν πρέπει να ειναι κενός.</string>
+    <string name="pin_saved">Το σημείο αποθηκεύτηκε με επιτυχία!</string>
 
 </resources>

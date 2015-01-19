@@ -41,6 +41,11 @@ public class Place {
         this.category_id = category_id;
     }
 
+    public Place(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public int getId() {
         return id;
     }
@@ -99,5 +104,29 @@ public class Place {
                 ", longitude=" + longitude +
                 ", category_id=" + category_id +
                 '}';
+    }
+
+    /**
+     * Checks if object has all required fields completed.
+     * This should be used before insert object in database.
+     * Object is valid if title, position(latlong) and category are present.
+     * @return true if valid
+     */
+    public boolean isValid(){
+        if(title!=null && !title.isEmpty()
+                && latitude > 0.0 && longitude > 0.0
+                && category_id > 0){
+            return true;
+        }
+        else return false;
+    }
+
+    /**
+     * Checks if object has been saved in database, based on the presence of id.
+     * @return true if object has not been saved in database yet.
+     */
+    public boolean isNew(){
+        if (id == 0) return true;
+        else return false;
     }
 }

@@ -190,8 +190,9 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
     }
 
     // Insert a new Place or update an existing one
-    public void insertOrReplacePlace(Place p) {
+    public long insertOrReplacePlace(Place p) {
         SQLiteDatabase db = this.getWritableDatabase();
+        long record_id;
 
         ContentValues values = new ContentValues();
         if(p.getId()>0)
@@ -203,9 +204,11 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         values.put(DBInterface.COLUMN_CATEGORY_ID, p.getCategory_id());
 
         // updating row
-        db.replace(DBInterface.TABLE_PLACES,null, values);
+        record_id = db.replace(DBInterface.TABLE_PLACES,null, values);
 
         db.close();
+
+        return record_id;
     }
 
     // Delete a Place by id
@@ -262,8 +265,9 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
     }
 
     // Insert a new Category or update an existing one
-    public void insertOrReplaceCategory(Category c) {
+    public long insertOrReplaceCategory(Category c) {
         SQLiteDatabase db = this.getWritableDatabase();
+        long record_id;
 
         ContentValues values = new ContentValues();
         values.put(DBInterface.COLUMN_ID, c.getId());
@@ -271,9 +275,10 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         values.put(DBInterface.COLUMN_COLOR, c.getColor()); // Category Color
 
         // updating row
-        db.replace(DBInterface.TABLE_CATEGORIES,null, values);
+        record_id = db.replace(DBInterface.TABLE_CATEGORIES,null, values);
 
         db.close();
+        return record_id;
     }
 
     // Delete a Category by id

@@ -62,11 +62,11 @@ import gr.upatras.ceid.geopin.db.DBHandler;
 import gr.upatras.ceid.geopin.db.models.Category;
 import gr.upatras.ceid.geopin.db.models.Place;
 import gr.upatras.ceid.geopin.dialogs.EditPinDialog;
+import gr.upatras.ceid.geopin.dialogs.EditPinDialog.SubmitListener;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
 import gr.upatras.ceid.geopin.maps.DirectionsClient;
 import gr.upatras.ceid.geopin.maps.DirectionsInfo;
 import gr.upatras.ceid.geopin.maps.PlaceMarker;
-//import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner.MultiSpinnerListener;
 
@@ -77,7 +77,7 @@ public class MainMapActivity extends AbstractMapActivity implements
         ClusterManager.OnClusterInfoWindowClickListener<PlaceMarker>,
         ClusterManager.OnClusterItemClickListener<PlaceMarker>,
         ClusterManager.OnClusterItemInfoWindowClickListener<PlaceMarker>,
-        MultiSpinnerListener, OnMapClickListener, OnMapLongClickListener{
+        MultiSpinnerListener, SubmitListener, OnMapClickListener, OnMapLongClickListener{
 
     private static final String STATE_NAV="nav";
 
@@ -388,15 +388,35 @@ public class MainMapActivity extends AbstractMapActivity implements
         }
     }
 
+    /**
+     * This callback is executed when a click occurs somewhere in map.
+     * If there is
+     * @param point
+     */
     @Override
     public void onMapClick(LatLng point) {
         if(expectingLocation){
             Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
             Crouton.cancelAllCroutons();
             expectingLocation=false;
-            new EditPinDialog(this).show();
+            new EditPinDialog(this, new Place(point.latitude, point.longitude), this).show();
         }
 
+    }
+
+    /**
+     * This executed when place data are submitted through the dialog.
+     */
+    @Override
+    public void onSubmit(Place place) {
+        if(place!=null && place.isValid() && place.isNew()){
+            int id = (int) db.insertOrReplacePlace(place);
+            place.setId(id);
+            PlaceMarker pm = PlaceMarker.fromPlace(place);
+            mClusterManager.addItem(pm);
+            mClusterManager.cluster();
+            Crouton.makeText(this, R.string.pin_saved, Style.CONFIRM).show();
+        }
     }
 
     @Override
@@ -594,6 +614,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     }
 
+
     protected class MarkerLoader extends AsyncTask<Location,PlaceMarker,List<PlaceMarker>>{
         DBHandler db;
         List<PlaceMarker> placeMarkers = new ArrayList<>();
@@ -662,8 +683,8 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         protected void onPostExecute(List<PlaceMarker> placeMarkers){
             if(placeMarkers!=null && placeMarkers.size()>0){
-                for(PlaceMarker cm : placeMarkers){
-                    mClusterManager.addItem(cm);
+                for(PlaceMarker pm : placeMarkers){
+                    mClusterManager.addItem(pm);
                 }
             }
             setSupportProgressBarIndeterminateVisibility(false);

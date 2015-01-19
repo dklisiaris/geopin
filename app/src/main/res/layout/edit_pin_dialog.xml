@@ -49,7 +49,7 @@
             >
 
             <TextView
-                android:id="@+id/title"
+                android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
@@ -65,11 +65,12 @@
 
 
             <EditText
-                android:id="@+id/edit_text_text39"
+                android:id="@+id/title_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:hint="@string/placeholder"
+                android:hint="@string/title_hint"
+                android:inputType="textCapSentences"
                 android:singleLine="true" />
 
 
@@ -89,13 +90,13 @@
                 />
 
             <EditText
+                android:id="@+id/description_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:inputType="textMultiLine"
-                android:hint="@string/placeholder"
-                android:ems="10"
-                android:id="@+id/editText" />
+                android:hint="@string/description_hint"
+                android:ems="10" />
 
             <TextView
                 android:id="@+id/category_label"
@@ -112,13 +113,11 @@
                 android:paddingRight="3sp"
                 />
 
-            <EditText
-                android:id="@+id/edit_text_text3"
+            <Spinner
+                android:id="@+id/categories_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:hint="@string/placeholder"
-                android:singleLine="true" />
+                android:layout_marginTop="5dp"/>
 
         </LinearLayout >
 

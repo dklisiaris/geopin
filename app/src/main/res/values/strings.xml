@@ -25,6 +25,8 @@
     <string name="description">Description</string>
     <string name="description_hint">Enter a description...</string>
     <string name="category">Category</string>
+    <string name="title_required">The title field is required.</string>
+    <string name="pin_saved">Pin saved successfully!</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>
