@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <string name="error">Σφάλμα! Κάτι δεν πήγε καλά.</string>
     <string name="add_pin">Προσθήκη σημείου</string>
     <string name="edit_pin">Επεξεργασία Σημείου</string>
     <string name="placeholder">Lorem ipsum dolor sit amet.</string>
@@ -24,5 +24,13 @@
     <string name="category">Κατηγορία</string>
     <string name="title_required">Ο τίτλος δεν πρέπει να ειναι κενός.</string>
     <string name="pin_saved">Το σημείο αποθηκεύτηκε με επιτυχία!</string>
+    <string name="origin">Αφετηρία</string>
+    <string name="origin_hint">Επιλέξτε αφετηρία...</string>
+    <string name="destination">Προορισμός</string>
+    <string name="destination_hint">Επιλέξτε προορισμό...</string>
+    <string name="navigation">Πλοήγηση</string>
+    <string name="get_instructions">Λήψη οδηγιών</string>
+    <string name="tap_origin">Πατήστε στον χάρτη για να επιλέξετε αφετηρία.</string>
+    <string name="tap_destination">Πατήστε στον χάρτη για να επιλέξετε προορισμό.</string>
 
 </resources>

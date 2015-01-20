@@ -4,6 +4,7 @@
     <string name="app_name">Geopin</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="error">Error! Something went wrong.</string>
     <string name="add_pin">Add Pin</string>
     <string name="edit_pin">Edit pin</string>
     <string name="placeholder">Lorem ipsum dolor sit amet.</string>
@@ -27,6 +28,14 @@
     <string name="category">Category</string>
     <string name="title_required">The title field is required.</string>
     <string name="pin_saved">Pin saved successfully!</string>
+    <string name="origin">Starting point</string>
+    <string name="origin_hint">Choose a starting point...</string>
+    <string name="destination">Destination</string>
+    <string name="destination_hint">Choose a destination...</string>
+    <string name="navigation">Navigation</string>
+    <string name="get_instructions">Instructions</string>
+    <string name="tap_origin">Tap on map to choose starting point.</string>
+    <string name="tap_destination">Tap on map to choose destination.</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

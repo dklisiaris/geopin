@@ -23,7 +23,6 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.google.maps.android:android-maps-utils:0.3+'
-    compile 'com.sothree.slidinguppanel:library:+'
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.google.android.gms:play-services:+'
     compile 'org.fluttercode.datafactory:datafactory:0.8'
@@ -31,4 +30,5 @@ dependencies {
         // exclusion is not necessary, but generally a good idea.
         exclude group: 'com.google.android', module: 'support-v4'
     }
+    compile 'com.sothree.slidinguppanel:library:2.0.4'
 }

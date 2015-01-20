@@ -1,20 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical">
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sliding_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="40dp"
+    android:gravity="bottom"
+    android:layout_gravity="bottom"
+    sothree:shadowHeight="4dp" >
 
-    <gr.upatras.ceid.geopin.widgets.MultiSpinner
-        android:id="@+id/multi_spinner"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/category_selector"
-        />
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
 
-    <fragment
-        android:id="@+id/map"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:id="@+id/root_layout" >
+
+            <gr.upatras.ceid.geopin.widgets.MultiSpinner
+                android:id="@+id/multi_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@drawable/category_selector"
+                />
+        </RelativeLayout>
+
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.SupportMapFragment"/>
+        >
 
-</LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/panel_top"
+            android:background="@color/purple"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp" >
+
+            <TextView
+                android:id="@+id/navigation_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="sans-serif-thin"
+                android:text="@string/navigation"
+                android:textColor="#f3f3f3"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:id="@+id/collapse_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/navigation_label"
+                android:contentDescription="@string/placeholder"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dip"
+                android:src="@drawable/ic_action_action_swap_vert_circle"
+                />
+        </RelativeLayout>
+
+
+        <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
+        <LinearLayout
+            android:focusable="true" android:focusableInTouchMode="true"
+            android:layout_width="0px" android:layout_height="0px"/>
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:weightSum="1.0"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <AutoCompleteTextView
+                android:id="@+id/origin_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".75"
+                android:layout_marginTop="5dp"
+                android:inputType="textCapSentences"
+                android:nextFocusUp="@id/origin_edit"
+                android:nextFocusLeft="@id/origin_edit"
+                android:hint="@string/origin_hint"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/btn_origin_map"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".10"
+                android:background="@drawable/btn_success"
+                android:drawableTop="@drawable/ic_action_map"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:onClick="captureOriginLocation"
+                style="@style/Button"
+                />
+
+            <Button
+                android:id="@+id/btn_origin_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".10"
+                android:background="@drawable/btn_success"
+                android:drawableTop="@drawable/ic_action_location_found"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                style="@style/Button"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:weightSum="1.0"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <AutoCompleteTextView
+                android:id="@+id/destination_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".75"
+                android:layout_marginTop="5dp"
+                android:inputType="textCapSentences"
+                android:nextFocusUp="@id/origin_edit"
+                android:nextFocusLeft="@id/origin_edit"
+                android:hint="@string/destination_hint"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/btn_destination_map"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".10"
+                android:background="@drawable/btn_success"
+                android:drawableTop="@drawable/ic_action_map"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:onClick="captureDestinationLocation"
+                style="@style/Button"
+                />
+
+            <Button
+                android:id="@+id/btn_destination_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".10"
+                android:background="@drawable/btn_success"
+                android:drawableTop="@drawable/ic_action_location_found"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                style="@style/Button"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

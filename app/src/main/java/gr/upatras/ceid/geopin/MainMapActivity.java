@@ -3,12 +3,15 @@ package gr.upatras.ceid.geopin;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Address;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,10 +25,15 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -42,7 +50,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.plus.model.people.Person;
+
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
@@ -50,6 +58,7 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import org.fluttercode.datafactory.impl.DataFactory;
 import org.w3c.dom.Document;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -70,6 +79,9 @@ import gr.upatras.ceid.geopin.maps.PlaceMarker;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner.MultiSpinnerListener;
 
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
+
 
 public class MainMapActivity extends AbstractMapActivity implements
         OnNavigationListener, OnInfoWindowClickListener, LocationSource, LocationListener,
@@ -84,6 +96,11 @@ public class MainMapActivity extends AbstractMapActivity implements
     private static final String[] DIRECTION_MODE_NAMES  = {"Αυτοκίνητο","Πεζός","Λεωφορείο"};
     private static final String[] DIRECTION_MODES_TYPES = {DirectionsClient.MODE_DRIVING,
             DirectionsClient.MODE_WALKING,DirectionsClient.MODE_TRANSIT};
+
+    private static final int ACTION_NONE = 0;
+    private static final int ACTION_NEW_PIN = 1;
+    private static final int ACTION_GET_ORIGIN = 2;
+    private static final int ACTION_GET_DESTINATION = 3;
 
 //    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
 
@@ -102,21 +119,87 @@ public class MainMapActivity extends AbstractMapActivity implements
     protected SparseArray<String> sparse            = null;
     protected SparseArray<Float> colors             = null;
     protected ArrayList<String> selectedCategories  = null;
+    protected SlidingUpPanelLayout directionsPanel  = null;
 
     private DBHandler db;
 
     private boolean isClear = false;
     private boolean expectingLocation = false;
+    private int expectingAction = ACTION_NONE;
     private int selectedID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 //        setContentView(R.layout.activity_main_map);
 
         if (readyToGo()) {
             setContentView(R.layout.map_fragment);
+
+            directionsPanel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+            boolean isSplited = getResources().getBoolean(R.bool.split_action_bar);
+            if(!isSplited){
+                setMargins(directionsPanel,0,0,0,0);
+            }
+            //directionsPanel.setShadowDrawable(getResources().getDrawable(R.drawable.above_shadow));
+            directionsPanel.setAnchorPoint(0.3f);
+            directionsPanel.setDragView(findViewById(R.id.panel_top));
+
+           directionsPanel.setPanelSlideListener(new PanelSlideListener() {
+                @Override
+                public void onPanelSlide(View panel, float slideOffset) {
+                    //Log.i(TAG, "onPanelSlide, offset " + slideOffset);
+                    if (slideOffset > 0.94) {
+                        if (getSupportActionBar().isShowing()) {
+                            getSupportActionBar().hide();
+                        }
+                    } else {
+                        if (!getSupportActionBar().isShowing()) {
+                            getSupportActionBar().show();
+                        }
+
+                    }
+                    if(slideOffset >= 0.7){
+                        Log.i("slideOffset", "down");
+//                        if (arrowIcon.getTag() == "up"){
+//                            arrowIcon.setImageResource(R.drawable.ic_navigation_expand);
+//                            arrowIcon.setTag("down");
+//                        }
+                    }
+                    else{
+                        Log.i("slideOffset", "up");
+//                        if (arrowIcon.getTag() == "down"){
+//                            arrowIcon.setImageResource(R.drawable.ic_navigation_collapse);
+//                            arrowIcon.setTag("up");
+//                        }
+                    }
+                    Log.i("Slide offset:", Float.toString(slideOffset));
+
+                }
+
+                @Override
+                public void onPanelExpanded(View panel) {
+                    //Log.i(TAG, "onPanelExpanded");
+                }
+
+                @Override
+                public void onPanelCollapsed(View panel) {
+                    //Log.i(TAG, "onPanelCollapsed");
+                }
+
+                @Override
+                public void onPanelAnchored(View panel) {
+                    //Log.i(TAG, "onPanelAnchored");
+
+                }
+
+                @Override
+                public void onPanelHidden(View view) {
+
+                }
+            });
 
             db = DBHandler.getInstance(this);
 
@@ -283,10 +366,18 @@ public class MainMapActivity extends AbstractMapActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.addPin:
-                enableLocationCapture();
+                capturePinLocation();
                 return true;
             case R.id.showHide:
                 togglePinsVisibility();
+                return true;
+            case R.id.get_directions:
+                if(directionsPanel!=null){
+                    if(!directionsPanel.isPanelAnchored())
+                        directionsPanel.anchorPanel();
+                    else
+                        directionsPanel.collapsePanel();
+                }
                 return true;
             case R.id.action_settings:
                 return true;
@@ -295,25 +386,45 @@ public class MainMapActivity extends AbstractMapActivity implements
         }
     }
 
-    public void enableLocationCapture(){
+    /**
+     * Enables location capturing so a new place can be added in that location.
+     */
+    public void capturePinLocation(){enableLocationCapture(ACTION_NEW_PIN);}
+
+    /**
+     * Called on button click to enable location capturing for the starting point.
+     * @param v
+     */
+    public void captureOriginLocation(View v){enableLocationCapture(ACTION_GET_ORIGIN);}
+
+    /**
+     * Called on button click to enable location capturing for the destination point.
+     * @param v
+     */
+    public void captureDestinationLocation(View v){enableLocationCapture(ACTION_GET_DESTINATION);}
+
+    public void enableLocationCapture(int action){
         expectingLocation = true;
+        expectingAction = action;
 
-        final Crouton crouton = Crouton.makeText(this, R.string.tap_to_pin, new Style.Builder()
-                .setBackgroundColorValue(getResources().getColor(R.color.purple)).setHeight(getActionbarHeight()).build())
+        int msg_res;
+        switch (action) {
+            case ACTION_NEW_PIN:  msg_res = R.string.tap_to_pin;
+                break;
+            case ACTION_GET_ORIGIN:  msg_res = R.string.tap_origin;
+                break;
+            case ACTION_GET_DESTINATION:  msg_res = R.string.tap_destination;
+                break;
+            default: msg_res = R.string.error;
+                break;
+        }
+
+        final Crouton crouton = Crouton.makeText(this, msg_res, new Style.Builder()
+                .setBackgroundColorValue(getResources().getColor(R.color.purple)).setHeight(getActionbarHeight()).build(),
+                (RelativeLayout)findViewById(R.id.root_layout))
                 .setConfiguration(new Configuration.Builder().setDuration(Configuration.DURATION_INFINITE).build());
+
         crouton.show();
-
-//        final Toast tag = Toast.makeText(this, getResources().getString(R.string.tap_to_pin), Toast.LENGTH_SHORT );
-//        tag.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
-//
-//        tag.show();
-
-        // Countdown with intervals to show toast more time(about 10s)
-//        new CountDownTimer(9000, 1000)
-//        {
-//            public void onTick(long millisUntilFinished) {tag.show();}
-//            public void onFinish() {tag.show();}
-//        }.start();
     }
 
     public void togglePinsVisibility(){
@@ -396,12 +507,22 @@ public class MainMapActivity extends AbstractMapActivity implements
     @Override
     public void onMapClick(LatLng point) {
         if(expectingLocation){
-            Toast.makeText(this, "tapped, point=" + point, Toast.LENGTH_LONG).show();
             Crouton.cancelAllCroutons();
             expectingLocation=false;
-            new EditPinDialog(this, new Place(point.latitude, point.longitude), this).show();
-        }
 
+            if(expectingAction == ACTION_NEW_PIN){
+                new EditPinDialog(this, new Place(point.latitude, point.longitude), this).show();
+            }
+            else if(expectingAction == ACTION_GET_ORIGIN){
+//                Toast.makeText(this, "origin tapped, point=" + point, Toast.LENGTH_LONG).show();
+                new ReverseGeocodingTask(getBaseContext()).execute(point.latitude, point.longitude);
+            }
+            else if(expectingAction == ACTION_GET_DESTINATION){
+                Toast.makeText(this, "dest tapped, point=" + point, Toast.LENGTH_LONG).show();
+            }
+
+            expectingAction = ACTION_NONE;
+        }
     }
 
     /**
@@ -740,6 +861,49 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     }
 
+    private class ReverseGeocodingTask extends AsyncTask<Double, Void, String>{
+        Context mContext;
+
+        public ReverseGeocodingTask(Context context){
+            super();
+            mContext = context;
+        }
+
+        @Override
+        protected String doInBackground(Double... params) {
+            Geocoder geocoder = new Geocoder(mContext);
+            double latitude = params[0].doubleValue();
+            double longitude = params[1].doubleValue();
+
+            List<Address> addresses = null;
+            String addressText="";
+
+            try {
+                addresses = geocoder.getFromLocation(latitude, longitude,1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if(addresses != null && addresses.size() > 0 ){
+                Address address = addresses.get(0);
+
+                addressText = String.format("%s, %s, %s",
+                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
+                        address.getLocality(),
+                        address.getCountryName());
+            }
+
+            return addressText;
+        }
+
+        @Override
+        protected void onPostExecute(String addressText) {
+            // Setting address of the touched Position
+//            tvLocation.setText(addressText);
+            Toast.makeText(mContext, addressText, Toast.LENGTH_LONG).show();
+        }
+    }
+
     /**
      * Custom renderer to enable the use of custom colors.
      */
@@ -779,6 +943,14 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         Log.d("Final ab size", ": "+actionBarHeight);
         return actionBarHeight;
+    }
+
+    public static void setMargins (View v, int l, int t, int r, int b) {
+        if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            p.setMargins(l, t, r, b);
+            v.requestLayout();
+        }
     }
 
 }

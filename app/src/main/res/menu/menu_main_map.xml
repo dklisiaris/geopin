@@ -12,4 +12,8 @@
         android:icon="@drawable/ic_action_action_visibility"
         android:title="@string/hide_pins"
         app:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/get_directions"
+        android:icon="@drawable/ic_action_directions"
+        android:title="@string/get_instructions"
+        app:showAsAction="ifRoom"/>
 </menu>
