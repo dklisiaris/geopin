@@ -32,5 +32,8 @@
     <string name="get_instructions">Λήψη οδηγιών</string>
     <string name="tap_origin">Πατήστε στον χάρτη για να επιλέξετε αφετηρία.</string>
     <string name="tap_destination">Πατήστε στον χάρτη για να επιλέξετε προορισμό.</string>
+    <string name="origin_required">Η αφετηρία δεν έχει συμπληρωθει.</string>
+    <string name="destination_required">Ο προορισμός δεν έχει συμπληρωθει.</string>
+    <string name="address_not_found">Η διεύθυνση δεν βρέθηκε.</string>
 
 </resources>

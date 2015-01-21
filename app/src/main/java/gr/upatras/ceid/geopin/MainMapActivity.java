@@ -32,8 +32,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -55,10 +58,22 @@ import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.fluttercode.datafactory.impl.DataFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -97,9 +112,9 @@ public class MainMapActivity extends AbstractMapActivity implements
     private static final String[] DIRECTION_MODES_TYPES = {DirectionsClient.MODE_DRIVING,
             DirectionsClient.MODE_WALKING,DirectionsClient.MODE_TRANSIT};
 
-    private static final int ACTION_NONE = 0;
-    private static final int ACTION_NEW_PIN = 1;
-    private static final int ACTION_GET_ORIGIN = 2;
+    private static final int ACTION_NONE            = 0;
+    private static final int ACTION_NEW_PIN         = 1;
+    private static final int ACTION_GET_ORIGIN      = 2;
     private static final int ACTION_GET_DESTINATION = 3;
 
 //    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
@@ -111,6 +126,8 @@ public class MainMapActivity extends AbstractMapActivity implements
     private Criteria crit                                   = new Criteria();
     private AlertDialog alert                               = null;
     private Location currentLocation                        = null;
+    private LatLng origin_position                          = null;
+    private LatLng destination_position                     = null;
 
     protected ClusterManager<PlaceMarker> mClusterManager;
     protected List<Place> loadedPlaces              = null;
@@ -162,20 +179,20 @@ public class MainMapActivity extends AbstractMapActivity implements
 
                     }
                     if(slideOffset >= 0.7){
-                        Log.i("slideOffset", "down");
+//                        Log.i("slideOffset", "down");
 //                        if (arrowIcon.getTag() == "up"){
 //                            arrowIcon.setImageResource(R.drawable.ic_navigation_expand);
 //                            arrowIcon.setTag("down");
 //                        }
                     }
                     else{
-                        Log.i("slideOffset", "up");
+//                        Log.i("slideOffset", "up");
 //                        if (arrowIcon.getTag() == "down"){
 //                            arrowIcon.setImageResource(R.drawable.ic_navigation_collapse);
 //                            arrowIcon.setTag("up");
 //                        }
                     }
-                    Log.i("Slide offset:", Float.toString(slideOffset));
+//                    Log.i("Slide offset:", Float.toString(slideOffset));
 
                 }
 
@@ -387,6 +404,24 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
     /**
+     * Called on button click to set current location as starting point.
+     * @param v
+     */
+    public void setCurrentLocationAsOrigin(View v){
+        expectingAction = ACTION_GET_ORIGIN;
+        new ReverseGeocodingTask(this).execute(currentLocation.getLatitude(), currentLocation.getLongitude());
+    }
+
+    /**
+     * Called on button click to set current location as destination.
+     * @param v
+     */
+    public void setCurrentLocationAsDestination(View v){
+        expectingAction = ACTION_GET_DESTINATION;
+        new ReverseGeocodingTask(this).execute(currentLocation.getLatitude(), currentLocation.getLongitude());
+    }
+
+    /**
      * Enables location capturing so a new place can be added in that location.
      */
     public void capturePinLocation(){enableLocationCapture(ACTION_NEW_PIN);}
@@ -425,6 +460,60 @@ public class MainMapActivity extends AbstractMapActivity implements
                 .setConfiguration(new Configuration.Builder().setDuration(Configuration.DURATION_INFINITE).build());
 
         crouton.show();
+    }
+
+    public void receiveInstructions(View v){receiveInstructions();}
+    public void receiveInstructions(){
+        AutoCompleteTextView origin = (AutoCompleteTextView)findViewById(R.id.origin_edit);
+        AutoCompleteTextView destination = (AutoCompleteTextView)findViewById(R.id.destination_edit);
+        origin.setError(null);
+        destination.setError(null);
+        if(origin_position!=null && destination_position!=null){
+            new DirectionsLoader().execute(origin_position, destination_position);
+//            Log.d("Receive Instruction", ": "+origin_position+", "+destination_position );
+        }
+        else{
+            if(origin.getText().length()==0)
+                origin.setError(this.getString(R.string.origin_required));
+            else if(destination.getText().length()==0)
+                destination.setError(this.getString(R.string.destination_required));
+            else if(origin_position==null){
+                setOriginFromAddress(origin.getText().toString());
+            }
+            else if(destination_position==null){
+                setDestinationFromAddress(destination.getText().toString());
+            }
+        }
+    }
+
+    public void setOriginFromAddress(String address){
+        expectingAction = ACTION_GET_ORIGIN;
+        address = encodeURIComponent(address);
+        new GeocodingTask(this).execute(address);
+    }
+
+    public void setDestinationFromAddress(String address){
+        expectingAction = ACTION_GET_DESTINATION;
+        address = encodeURIComponent(address);
+        new GeocodingTask(this).execute(address);
+    }
+
+    public static String encodeURIComponent(String s) {
+        String result;
+
+        try {
+            result = URLEncoder.encode(s, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\%21", "!")
+                    .replaceAll("\\%27", "'")
+                    .replaceAll("\\%28", "(")
+                    .replaceAll("\\%29", ")")
+                    .replaceAll("\\%7E", "~");
+        } catch (UnsupportedEncodingException e) {
+            result = s;
+        }
+
+        return result;
     }
 
     public void togglePinsVisibility(){
@@ -512,16 +601,15 @@ public class MainMapActivity extends AbstractMapActivity implements
 
             if(expectingAction == ACTION_NEW_PIN){
                 new EditPinDialog(this, new Place(point.latitude, point.longitude), this).show();
+                expectingAction = ACTION_NONE;
             }
             else if(expectingAction == ACTION_GET_ORIGIN){
-//                Toast.makeText(this, "origin tapped, point=" + point, Toast.LENGTH_LONG).show();
                 new ReverseGeocodingTask(getBaseContext()).execute(point.latitude, point.longitude);
             }
             else if(expectingAction == ACTION_GET_DESTINATION){
-                Toast.makeText(this, "dest tapped, point=" + point, Toast.LENGTH_LONG).show();
+                new ReverseGeocodingTask(getBaseContext()).execute(point.latitude, point.longitude);
             }
 
-            expectingAction = ACTION_NONE;
         }
     }
 
@@ -857,12 +945,17 @@ public class MainMapActivity extends AbstractMapActivity implements
                         durat+" λεπτα");
                 selectedMarker.showInfoWindow();
             }
+
+            origin_position=null;
+            destination_position=null;
         }
 
     }
 
     private class ReverseGeocodingTask extends AsyncTask<Double, Void, String>{
         Context mContext;
+        double latitude;
+        double longitude;
 
         public ReverseGeocodingTask(Context context){
             super();
@@ -872,8 +965,8 @@ public class MainMapActivity extends AbstractMapActivity implements
         @Override
         protected String doInBackground(Double... params) {
             Geocoder geocoder = new Geocoder(mContext);
-            double latitude = params[0].doubleValue();
-            double longitude = params[1].doubleValue();
+            latitude = params[0].doubleValue();
+            longitude = params[1].doubleValue();
 
             List<Address> addresses = null;
             String addressText="";
@@ -899,8 +992,111 @@ public class MainMapActivity extends AbstractMapActivity implements
         @Override
         protected void onPostExecute(String addressText) {
             // Setting address of the touched Position
-//            tvLocation.setText(addressText);
-            Toast.makeText(mContext, addressText, Toast.LENGTH_LONG).show();
+            if(expectingAction == ACTION_GET_ORIGIN){
+                AutoCompleteTextView origin = (AutoCompleteTextView)findViewById(R.id.origin_edit);
+                origin.setText(addressText);
+                origin_position = new LatLng(latitude,longitude);
+            }
+            else if(expectingAction == ACTION_GET_DESTINATION){
+                AutoCompleteTextView destination = (AutoCompleteTextView)findViewById(R.id.destination_edit);
+                destination.setText(addressText);
+                destination_position = new LatLng(latitude,longitude);
+            }
+            else{
+                Toast.makeText(mContext, addressText, Toast.LENGTH_LONG).show();
+            }
+            expectingAction = ACTION_NONE;
+        }
+    }
+
+    private class GeocodingTask extends AsyncTask<String, Void, LatLng>{
+        Context mContext;
+        double latitude;
+        double longitude;
+
+        public GeocodingTask(Context context){
+            super();
+            mContext = context;
+        }
+
+        @Override
+        protected LatLng doInBackground(String... params) {
+            String uri = "http://maps.google.com/maps/api/geocode/json?address=" +
+                    params[0] + "&sensor=false&language=el";
+
+            HttpGet httpGet = new HttpGet(uri);
+            HttpClient client = new DefaultHttpClient();
+            HttpResponse response;
+            StringBuilder stringBuilder = new StringBuilder();
+
+            try {
+                response = client.execute(httpGet);
+                HttpEntity entity = response.getEntity();
+                InputStream stream = entity.getContent();
+                int b;
+                while ((b = stream.read()) != -1) {
+                    stringBuilder.append((char) b);
+                }
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(stringBuilder.toString());
+
+                if(jsonObject.getString("status").equals("OK")){
+                    longitude = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+                            .getJSONObject("geometry").getJSONObject("location")
+                            .getDouble("lng");
+
+                    latitude = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+                            .getJSONObject("geometry").getJSONObject("location")
+                            .getDouble("lat");
+                }
+                else{
+                    longitude = 0.0;
+                    latitude = 0.0;
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if(latitude>0.0 && longitude>0.0)
+                return new LatLng(latitude,longitude);
+            else
+                return null;
+        }
+
+        @Override
+        protected void onPostExecute(LatLng latlng) {
+            boolean has_errors = false;
+            if(expectingAction == ACTION_GET_ORIGIN){
+                origin_position = latlng;
+                AutoCompleteTextView origin = (AutoCompleteTextView)findViewById(R.id.origin_edit);
+                if(origin_position==null){
+                    origin.setError(mContext.getString(R.string.address_not_found));
+                    has_errors = true;
+                }
+                else origin.setError(null);
+            }
+            else if(expectingAction == ACTION_GET_DESTINATION){
+                destination_position = latlng;
+                AutoCompleteTextView destination = (AutoCompleteTextView)findViewById(R.id.destination_edit);
+                if(destination_position==null){
+                    destination.setError(mContext.getString(R.string.address_not_found));
+                    has_errors = true;
+                }
+                else destination.setError(null);
+            }
+            expectingAction = ACTION_NONE;
+
+            if((origin_position!=null || destination_position!=null) && !has_errors){
+                receiveInstructions();
+            }
         }
     }
 

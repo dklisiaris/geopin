@@ -36,6 +36,9 @@
     <string name="get_instructions">Instructions</string>
     <string name="tap_origin">Tap on map to choose starting point.</string>
     <string name="tap_destination">Tap on map to choose destination.</string>
+    <string name="origin_required">The starting point field is required.</string>
+    <string name="destination_required">The destination field is required.</string>
+    <string name="address_not_found">The address didn\'t found.</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
 
 </resources>

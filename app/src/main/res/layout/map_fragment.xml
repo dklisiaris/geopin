@@ -123,6 +123,7 @@
                 android:drawableTop="@drawable/ic_action_location_found"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
+                android:onClick="setCurrentLocationAsOrigin"
                 style="@style/Button"
                 />
 
@@ -169,10 +170,23 @@
                 android:drawableTop="@drawable/ic_action_location_found"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
+                android:onClick="setCurrentLocationAsDestination"
                 style="@style/Button"
                 />
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_get_directions"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_success"
+            android:text="@string/get_instructions"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:onClick="receiveInstructions"
+            style="@style/Button"
+            />
 
     </LinearLayout>
 
