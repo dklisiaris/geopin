@@ -14,17 +14,18 @@ import org.w3c.dom.NodeList;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-public class DirectionsClient {
+public class DirectionsXMLClient {
     public final static String MODE_DRIVING = "driving";
     public final static String MODE_WALKING = "walking";
     public final static String MODE_BICYCLING = "bicycling";
     public final static String MODE_TRANSIT = "transit";
 
-    public DirectionsClient() { }
+    public DirectionsXMLClient() { }
 
     public Document getDocument(LatLng start, LatLng end, String mode) {
         String depTime="";
@@ -35,6 +36,9 @@ public class DirectionsClient {
                 + "&destination=" + end.latitude + "," + end.longitude
                 + "&sensor=false&units=metric&mode="+mode+"&language=el"+depTime;
         //Log.d("api link", url);
+
+        //http://stackoverflow.com/questions/19290593/displaying-multiple-routes-using-directions-api-in-android/19329951#19329951
+        //http://maps.googleapis.com/maps/api/directions/xml?origin=37.9756556,23.7339464&destination=38.0005619,23.741028&sensor=false&units=metric&mode=driving&language=el
 
         try {
             HttpClient httpClient = new DefaultHttpClient();
@@ -144,6 +148,14 @@ public class DirectionsClient {
         }
 
         return listGeopoints;
+    }
+
+    public List<Step> getSteps(Document doc){
+        List<Step> steps = new ArrayList<>();
+        NodeList nl1, nl2, nl3;
+        nl1 = doc.getElementsByTagName("step");
+
+        return steps;
     }
 
     private int getNodeIndex(NodeList nl, String nodename) {

@@ -1,14 +1,11 @@
 package gr.upatras.ceid.geopin;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.PointF;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Address;
@@ -18,14 +15,11 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,10 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -64,7 +55,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.fluttercode.datafactory.impl.DataFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,8 +78,9 @@ import gr.upatras.ceid.geopin.db.models.Place;
 import gr.upatras.ceid.geopin.dialogs.EditPinDialog;
 import gr.upatras.ceid.geopin.dialogs.EditPinDialog.SubmitListener;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
-import gr.upatras.ceid.geopin.maps.DirectionsClient;
-import gr.upatras.ceid.geopin.maps.DirectionsInfo;
+import gr.upatras.ceid.geopin.maps.DirectionsJSONClient;
+import gr.upatras.ceid.geopin.maps.DirectionsXMLClient;
+import gr.upatras.ceid.geopin.maps.RouteInfo;
 import gr.upatras.ceid.geopin.maps.PlaceMarker;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner.MultiSpinnerListener;
@@ -109,8 +100,8 @@ public class MainMapActivity extends AbstractMapActivity implements
     private static final String STATE_NAV="nav";
 
     private static final String[] DIRECTION_MODE_NAMES  = {"Αυτοκίνητο","Πεζός","Λεωφορείο"};
-    private static final String[] DIRECTION_MODES_TYPES = {DirectionsClient.MODE_DRIVING,
-            DirectionsClient.MODE_WALKING,DirectionsClient.MODE_TRANSIT};
+    private static final String[] DIRECTION_MODES_TYPES = {DirectionsXMLClient.MODE_DRIVING,
+            DirectionsXMLClient.MODE_WALKING, DirectionsXMLClient.MODE_TRANSIT};
 
     private static final int ACTION_NONE            = 0;
     private static final int ACTION_NEW_PIN         = 1;
@@ -119,7 +110,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
 //    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
 
-    protected String directionMode                          = DirectionsClient.MODE_DRIVING;
+    protected String directionMode                          = DirectionsXMLClient.MODE_DRIVING;
     private GoogleMap map                                   = null;
     private OnLocationChangedListener mapLocationListener   = null;
     private LocationManager locMgr                          = null;
@@ -907,35 +898,24 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
 
-    protected class DirectionsLoader extends AsyncTask<LatLng,Void,DirectionsInfo> {
+    protected class DirectionsLoader extends AsyncTask<LatLng,Void,RouteInfo> {
 
         @Override
-        protected DirectionsInfo doInBackground(LatLng... params) {
-            DirectionsClient md = new DirectionsClient();
+        protected RouteInfo doInBackground(LatLng... params) {
+            DirectionsJSONClient djc = new DirectionsJSONClient(params[0], params[1], directionMode);
+            RouteInfo routeInfo = djc.getRouteInfo();
 
-            Document doc = md.getDocument(params[0], params[1], directionMode);
-            ArrayList<LatLng> directionPoint = md.getDirection(doc);
-            PolylineOptions rectLine = new PolylineOptions().width(3).color(Color.RED);
-
-            for(int i = 0 ; i < directionPoint.size() ; i++) {
-                rectLine.add(directionPoint.get(i));
-            }
-
-            DirectionsInfo directionsInfo = new DirectionsInfo(
-                    null,md.getDurationValue(doc),
-                    null,md.getDistanceValue(doc),
-                    rectLine);
-            return directionsInfo;
+            return routeInfo;
         }
 
-        protected void onPostExecute(DirectionsInfo directionsInfo){
+        protected void onPostExecute(RouteInfo routeInfo){
             if(currentPolyline!=null){
                 currentPolyline.remove();
             }
-            currentPolyline = map.addPolyline(directionsInfo.getPolylineOptions());
+            currentPolyline = map.addPolyline(routeInfo.getPolylineOptions());
 
-            double dist = (double)directionsInfo.getDistanceValue() * 1.0/1000.0;
-            int durat = (int)Math.round(directionsInfo.getDurationValue() * 1.0/60.0);
+            double dist = (double) routeInfo.getDistanceValue() * 1.0/1000.0;
+            int durat = (int)Math.round(routeInfo.getDurationValue() * 1.0/60.0);
 
             if(selectedMarker!=null){
                 selectedMarker.hideInfoWindow();
