@@ -35,5 +35,8 @@
     <string name="origin_required">Η αφετηρία δεν έχει συμπληρωθει.</string>
     <string name="destination_required">Ο προορισμός δεν έχει συμπληρωθει.</string>
     <string name="address_not_found">Η διεύθυνση δεν βρέθηκε.</string>
+    <string name="distance">Απόσταση</string>
+    <string name="duration">Διάρκεια</string>
+    <string name="arrival_time">Χρόνος Άφιξης</string>
 
 </resources>

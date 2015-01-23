@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -43,7 +44,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
@@ -58,7 +58,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +71,7 @@ import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 import de.keyboardsurfer.android.widget.crouton.Configuration;
 
+import gr.upatras.ceid.geopin.adapters.InstructionsAdapter;
 import gr.upatras.ceid.geopin.db.DBHandler;
 import gr.upatras.ceid.geopin.db.models.Category;
 import gr.upatras.ceid.geopin.db.models.Place;
@@ -82,6 +82,7 @@ import gr.upatras.ceid.geopin.maps.DirectionsJSONClient;
 import gr.upatras.ceid.geopin.maps.DirectionsXMLClient;
 import gr.upatras.ceid.geopin.maps.RouteInfo;
 import gr.upatras.ceid.geopin.maps.PlaceMarker;
+import gr.upatras.ceid.geopin.maps.Step;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner;
 import gr.upatras.ceid.geopin.widgets.MultiSpinner.MultiSpinnerListener;
 
@@ -128,6 +129,8 @@ public class MainMapActivity extends AbstractMapActivity implements
     protected SparseArray<Float> colors             = null;
     protected ArrayList<String> selectedCategories  = null;
     protected SlidingUpPanelLayout directionsPanel  = null;
+//    protected ListView instructionsList             = null;
+//    protected InstructionsAdapter adapter           = null;
 
     private DBHandler db;
 
@@ -144,7 +147,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 //        setContentView(R.layout.activity_main_map);
 
         if (readyToGo()) {
-            setContentView(R.layout.map_fragment);
+            setContentView(R.layout.activity_main_map);
 
             directionsPanel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
             boolean isSplited = getResources().getBoolean(R.bool.split_action_bar);
@@ -754,23 +757,23 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @SuppressWarnings("deprecation")
     private void initListNav() {
-        ArrayList<String> items=new ArrayList<String>();
-        ArrayAdapter<String> nav=null;
-        ActionBar bar=getSupportActionBar();
+        ArrayList<String> items = new ArrayList<>();
+        ArrayAdapter<String> nav;
+        ActionBar bar = getSupportActionBar();
 
         for (String m : DIRECTION_MODE_NAMES) {
             items.add(m);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             nav=
-                    new ArrayAdapter<String>(
+                    new ArrayAdapter<>(
                             bar.getThemedContext(),
                             android.R.layout.simple_spinner_item,
                             items);
         }
         else {
             nav=
-                    new ArrayAdapter<String>(
+                    new ArrayAdapter<>(
                             this,
                             android.R.layout.simple_spinner_item,
                             items);
@@ -899,6 +902,12 @@ public class MainMapActivity extends AbstractMapActivity implements
 
 
     protected class DirectionsLoader extends AsyncTask<LatLng,Void,RouteInfo> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setSupportProgressBarIndeterminateVisibility(true);
+
+        }
 
         @Override
         protected RouteInfo doInBackground(LatLng... params) {
@@ -909,6 +918,8 @@ public class MainMapActivity extends AbstractMapActivity implements
         }
 
         protected void onPostExecute(RouteInfo routeInfo){
+            setSupportProgressBarIndeterminateVisibility(false);
+
             if(currentPolyline!=null){
                 currentPolyline.remove();
             }
@@ -916,6 +927,16 @@ public class MainMapActivity extends AbstractMapActivity implements
 
             double dist = (double) routeInfo.getDistanceValue() * 1.0/1000.0;
             int durat = (int)Math.round(routeInfo.getDurationValue() * 1.0/60.0);
+
+//            for(Step step : routeInfo.getSteps()){
+//                Log.d(step.getDistanceText()+", "+step.getDurationText(), step.getHtmlInstructions());
+//            }
+
+            ListView instructionsList = (ListView)findViewById(R.id.intructions_list);
+            InstructionsAdapter adapter = new InstructionsAdapter(getApplicationContext());
+
+            adapter.setData(routeInfo.getSteps());
+            instructionsList.setAdapter(adapter);
 
             if(selectedMarker!=null){
                 selectedMarker.hideInfoWindow();

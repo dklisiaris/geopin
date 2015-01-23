@@ -150,14 +150,6 @@ public class DirectionsXMLClient {
         return listGeopoints;
     }
 
-    public List<Step> getSteps(Document doc){
-        List<Step> steps = new ArrayList<>();
-        NodeList nl1, nl2, nl3;
-        nl1 = doc.getElementsByTagName("step");
-
-        return steps;
-    }
-
     private int getNodeIndex(NodeList nl, String nodename) {
         for(int i = 0 ; i < nl.getLength() ; i++) {
             if(nl.item(i).getNodeName().equals(nodename))

@@ -9,6 +9,9 @@ public class Step {
     private String durationText, distanceText;
     private String htmlInstructions;
 
+    public Step() {
+    }
+
     public Step(LatLng startLocation, LatLng endLocation, int durationValue, int distanceValue, String durationText, String distanceText, String htmlInstructions) {
         this.startLocation = startLocation;
         this.endLocation = endLocation;

@@ -15,6 +15,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class DirectionsJSONClient {
     public final static String MODE_TRANSIT = "transit";
 
     private JSONObject directions;
+    private JSONObject route;
+    private JSONObject leg;
 
     public DirectionsJSONClient(LatLng start, LatLng end, String mode) {
         String url = makeUrl(start, end, "metric", mode, "el");
@@ -42,6 +45,12 @@ public class DirectionsJSONClient {
                 directions = new JSONObject(response);
                 if(!directions.getString("status").equals("OK")){
                     directions = null;
+                }
+                else{
+                    // No alternatives. Just get the first route available.
+                    route = directions.getJSONArray("routes").getJSONObject(0);
+                    leg = route.getJSONArray("legs").getJSONObject(0);
+
                 }
             }
             catch (JSONException e) {e.printStackTrace();}
@@ -56,15 +65,12 @@ public class DirectionsJSONClient {
     public RouteInfo getRouteInfo(){
         RouteInfo routeInfo = new RouteInfo();
         try {
-            // No alternatives. Just get the first route available.
-            JSONObject route = directions.getJSONArray("routes").getJSONObject(0);
-            JSONObject leg = route.getJSONArray("legs").getJSONObject(0);
-
             routeInfo.setStartAddress(leg.getString("start_address"));
             routeInfo.setEndAddress(leg.getString("end_address"));
 
             routeInfo.setDistanceText(leg.getJSONObject("distance").getString("text"));
             routeInfo.setDistanceValue(leg.getJSONObject("distance").getInt("value"));
+
             routeInfo.setDurationText(leg.getJSONObject("duration").getString("text"));
             routeInfo.setDurationValue(leg.getJSONObject("duration").getInt("value"));
 
@@ -76,11 +82,41 @@ public class DirectionsJSONClient {
             }
             routeInfo.setPolylineOptions(rectLine);
 
+            routeInfo.setSteps(getSteps());
+
 
         }
         catch (JSONException e) {e.printStackTrace();}
 
         return routeInfo;
+    }
+
+    public List<Step> getSteps(){
+        List<Step> steps = new ArrayList<>();
+        try {
+            JSONArray jSteps = leg.getJSONArray("steps");
+            for (int i=0; i < jSteps.length(); i++){
+                JSONObject jStep = jSteps.getJSONObject(i);
+                Step step = new Step();
+
+                step.setStartLocation(new LatLng(jStep.getJSONObject("start_location").getDouble("lat"), jStep.getJSONObject("start_location").getDouble("lng")));
+                step.setEndLocation(new LatLng(jStep.getJSONObject("end_location").getDouble("lat"), jStep.getJSONObject("end_location").getDouble("lng")));
+
+                step.setDistanceText(jStep.getJSONObject("distance").getString("text"));
+                step.setDistanceValue(jStep.getJSONObject("distance").getInt("value"));
+
+                step.setDurationText(jStep.getJSONObject("duration").getString("text"));
+                step.setDurationValue(jStep.getJSONObject("duration").getInt("value"));
+
+                step.setHtmlInstructions(jStep.getString("html_instructions"));
+
+                steps.add(step);
+            }
+
+        }
+        catch (JSONException e) {e.printStackTrace();}
+
+        return steps;
     }
 
 
@@ -110,7 +146,7 @@ public class DirectionsJSONClient {
         urlBuilder.append(units);
         urlBuilder.append("&mode=");
         urlBuilder.append(mode);
-        urlBuilder.append("&language=el");
+        urlBuilder.append("&language=");
         urlBuilder.append(language);
         urlBuilder.append("&departure_time=");
         urlBuilder.append(Long.toString(time));

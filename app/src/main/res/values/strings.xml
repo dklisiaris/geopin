@@ -40,5 +40,8 @@
     <string name="destination_required">The destination field is required.</string>
     <string name="address_not_found">The address didn\'t found.</string>
     <string name="title_activity_abstract_map">AbstractMapActivity</string>
+    <string name="distance">Distance</string>
+    <string name="duration">Duration</string>
+    <string name="arrival_time">Arrival Time</string>
 
 </resources>
