@@ -29,6 +29,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -935,7 +936,14 @@ public class MainMapActivity extends AbstractMapActivity implements
             ListView instructionsList = (ListView)findViewById(R.id.intructions_list);
             InstructionsAdapter adapter = new InstructionsAdapter(getApplicationContext());
 
+            View instructionsHeader = View.inflate(getApplicationContext(), R.layout.instructions_list_header, null);
+            ((TextView)instructionsHeader.findViewById(R.id.origin)).setText(routeInfo.getStartAddress());
+            ((TextView)instructionsHeader.findViewById(R.id.destination)).setText(routeInfo.getEndAddress());
+            ((TextView)instructionsHeader.findViewById(R.id.duration)).setText(routeInfo.getDurationText());
+            ((TextView)instructionsHeader.findViewById(R.id.distance)).setText(routeInfo.getDistanceText());
+
             adapter.setData(routeInfo.getSteps());
+            instructionsList.addHeaderView(instructionsHeader);
             instructionsList.setAdapter(adapter);
 
             if(selectedMarker!=null){
