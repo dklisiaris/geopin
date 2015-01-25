@@ -38,5 +38,9 @@
     <string name="distance">Απόσταση</string>
     <string name="duration">Διάρκεια</string>
     <string name="arrival_time">Χρόνος Άφιξης</string>
+    <string name="options">Επιλογές</string>
+    <string name="delete">Διαγραφή</string>
+    <string name="edit">Επεξεργασία</string>
+    <string name="share">Δημοσίευση στο Facebook</string>
 
 </resources>

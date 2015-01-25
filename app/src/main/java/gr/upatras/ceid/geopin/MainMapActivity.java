@@ -20,6 +20,7 @@ import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -123,15 +124,16 @@ public class MainMapActivity extends AbstractMapActivity implements
     private LatLng destination_position                     = null;
 
     protected ClusterManager<PlaceMarker> mClusterManager;
-    protected List<Place> loadedPlaces              = null;
-    protected Polyline currentPolyline              = null;
-    protected Marker selectedMarker                 = null;
-    protected SparseArray<String> sparse            = null;
-    protected SparseArray<Float> colors             = null;
-    protected ArrayList<String> selectedCategories  = null;
-    protected SlidingUpPanelLayout directionsPanel  = null;
-//    protected ListView instructionsList             = null;
-//    protected InstructionsAdapter adapter           = null;
+    protected List<Place> loadedPlaces                  = null;
+    protected Polyline currentPolyline                  = null;
+    protected Marker selectedMarker                     = null;
+    protected SparseArray<String> sparse                = null;
+    protected SparseArray<Float> colors                 = null;
+    protected ArrayList<String> selectedCategories      = null;
+    protected SlidingUpPanelLayout directionsPanel      = null;
+    protected ListView instructionsList                 = null;
+    protected InstructionsAdapter instructionsAdapter   = null;
+    protected View instructionsHeader                   = null;
 
     private DBHandler db;
 
@@ -815,7 +817,49 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public void onInfoWindowClick(Marker marker) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.options)
+                .setCancelable(true)
+                .setItems(R.array.infowindow_options, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                deletePlace(selectedID);
+                                break;
+                            case 1:  Log.d("Option Clicked", ": Edit");
+                                break;
+                            case 2:  Log.d("Option Clicked", ": Instructions");
+                                break;
+                            case 3:  Log.d("Option Clicked", ": Share");
+                                break;
+                            default:
+                                break;
+                        }
 
+                    }
+                });
+        builder.create().show();
+    }
+
+    private void deletePlace(int id){
+        // Delete place from database.
+        db.deletePlace(id);
+
+        // Remove marker and polyline from map.
+        if(selectedMarker!=null) selectedMarker.remove();
+        if(currentPolyline!=null) currentPolyline.remove();
+        // Set selected marker's id to 0 (there is no item with id 0).
+        selectedID = 0;
+
+        // Clear instructions list.
+        instructionsAdapter.clear();
+        instructionsAdapter.notifyDataSetChanged();
+        instructionsList.setAdapter(null);
+        instructionsList.removeHeaderView(instructionsHeader);
+
+        // Clear and reload cluster items.
+        mClusterManager.clearItems();
+        onResume();
     }
 
 
@@ -933,18 +977,24 @@ public class MainMapActivity extends AbstractMapActivity implements
 //                Log.d(step.getDistanceText()+", "+step.getDurationText(), step.getHtmlInstructions());
 //            }
 
-            ListView instructionsList = (ListView)findViewById(R.id.intructions_list);
-            InstructionsAdapter adapter = new InstructionsAdapter(getApplicationContext());
+            if(instructionsList == null)
+                instructionsList = (ListView)findViewById(R.id.intructions_list);
 
-            View instructionsHeader = View.inflate(getApplicationContext(), R.layout.instructions_list_header, null);
+            instructionsAdapter = new InstructionsAdapter(getApplicationContext());
+
+            if(instructionsHeader == null)
+                instructionsHeader = View.inflate(getApplicationContext(), R.layout.instructions_list_header, null);
+
             ((TextView)instructionsHeader.findViewById(R.id.origin)).setText(routeInfo.getStartAddress());
             ((TextView)instructionsHeader.findViewById(R.id.destination)).setText(routeInfo.getEndAddress());
             ((TextView)instructionsHeader.findViewById(R.id.duration)).setText(routeInfo.getDurationText());
             ((TextView)instructionsHeader.findViewById(R.id.distance)).setText(routeInfo.getDistanceText());
 
-            adapter.setData(routeInfo.getSteps());
-            instructionsList.addHeaderView(instructionsHeader);
-            instructionsList.setAdapter(adapter);
+            instructionsAdapter.setData(routeInfo.getSteps());
+            if(instructionsList.getHeaderViewsCount()==0)
+                instructionsList.addHeaderView(instructionsHeader);
+
+            instructionsList.setAdapter(instructionsAdapter);
 
             if(selectedMarker!=null){
                 selectedMarker.hideInfoWindow();

@@ -43,5 +43,10 @@
     <string name="distance">Distance</string>
     <string name="duration">Duration</string>
     <string name="arrival_time">Arrival Time</string>
+    <string name="options">Options</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="share">Share on Facebook</string>
+
 
 </resources>
