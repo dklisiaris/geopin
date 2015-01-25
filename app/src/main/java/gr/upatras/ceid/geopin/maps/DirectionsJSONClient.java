@@ -12,6 +12,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,7 +191,11 @@ public class DirectionsJSONClient {
     }
 
     private String getJSONResponse(String url){
-        DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
+        HttpParams httpParams = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(httpParams, 3000);
+        HttpConnectionParams.setSoTimeout(httpParams, 10000);
+
+        DefaultHttpClient httpclient = new DefaultHttpClient(httpParams);
         HttpPost httppost = new HttpPost(url);
 
         httppost.setHeader("Content-type", "application/json");
@@ -205,11 +212,12 @@ public class DirectionsJSONClient {
             StringBuilder sb = new StringBuilder();
 
             String line = null;
-            while ((line = reader.readLine()) != null)
-            {
+            while ((line = reader.readLine()) != null) {
                 sb.append(line + "\n");
             }
             result = sb.toString();
+        }catch (SocketTimeoutException e) {
+            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (ClientProtocolException e) {
