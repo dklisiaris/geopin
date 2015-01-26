@@ -195,17 +195,22 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         long record_id;
 
         ContentValues values = new ContentValues();
-        if(p.getId()>0)
-            values.put(DBInterface.COLUMN_ID, p.getId());
+
         values.put(DBInterface.COLUMN_TITLE, p.getTitle()); // Place Name
         values.put(DBInterface.COLUMN_DESCRIPTION, p.getDescription()); // Place Descr
         values.put(DBInterface.COLUMN_LATITUDE, p.getLatitude());
         values.put(DBInterface.COLUMN_LONGITUDE, p.getLongitude());
         values.put(DBInterface.COLUMN_CATEGORY_ID, p.getCategory_id());
 
-        // updating row
-        record_id = db.replace(DBInterface.TABLE_PLACES,null, values);
-
+        if(p.getId()>0){
+            Log.d("DB UPDATE", "Place #"+p.getId()+" Updated!");
+            record_id = db.update(DBInterface.TABLE_PLACES, values, DBInterface.COLUMN_ID + " = ?", new String[] { Integer.toString(p.getId()) });
+        }
+        else{
+            record_id = db.insert(DBInterface.TABLE_PLACES,null, values);
+            Log.d("DB UPDATE", "Place #"+p.getId()+" Inserted!");
+        }
+        Log.d("DB UPDATE", "Run...");
         db.close();
 
         return record_id;

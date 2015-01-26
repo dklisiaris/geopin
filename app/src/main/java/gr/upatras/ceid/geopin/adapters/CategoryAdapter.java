@@ -10,6 +10,7 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import gr.upatras.ceid.geopin.db.models.Category;
 
@@ -51,9 +52,19 @@ public class CategoryAdapter extends BaseAdapter implements SpinnerAdapter {
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int position) {
+        return data.get(position).getId();
     }
+
+    public int getItemPositionById(long id) throws NoSuchElementException {
+        for(int pos = 0; pos<data.size(); pos++){
+            if(getItemId(pos)==id) {
+                return pos;
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
     /**
      * Returns the View that is shown when a element was
      * selected.

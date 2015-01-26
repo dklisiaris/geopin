@@ -68,6 +68,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
@@ -615,19 +616,26 @@ public class MainMapActivity extends AbstractMapActivity implements
      */
     @Override
     public void onSubmit(Place place) {
-        if(place!=null && place.isValid() && place.isNew()){
+        if(place!=null && place.isValid()){
             int id = (int) db.insertOrReplacePlace(place);
-            place.setId(id);
-            PlaceMarker pm = PlaceMarker.fromPlace(place);
-            mClusterManager.addItem(pm);
-            mClusterManager.cluster();
-            Crouton.makeText(this, R.string.pin_saved, Style.CONFIRM).show();
+            if(place.isNew()){
+                place.setId(id);
+                PlaceMarker pm = PlaceMarker.fromPlace(place);
+                mClusterManager.addItem(pm);
+                mClusterManager.cluster();
+            }
+            else{
+                removeSelectedMarker();
+                reloadItems();
+
+            }
+            Crouton.makeText(this, R.string.pin_saved, Style.CONFIRM, (RelativeLayout)findViewById(R.id.root_layout)).show();
         }
     }
 
     @Override
     public void onMapLongClick(LatLng point) {
-        Toast.makeText(this, "long pressed, point=" + point, Toast.LENGTH_LONG).show();
+        new ReverseGeocodingTask(this).execute(point.latitude, point.longitude);
     }
 
     @Override
@@ -823,10 +831,10 @@ public class MainMapActivity extends AbstractMapActivity implements
                 .setItems(R.array.infowindow_options, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
-                            case 0:
-                                deletePlace(selectedID);
+                            case 0: deletePlace(selectedID);
                                 break;
-                            case 1:  Log.d("Option Clicked", ": Edit");
+                            case 1:
+                                editPlace(selectedID);
                                 break;
                             case 2:  Log.d("Option Clicked", ": Instructions");
                                 break;
@@ -841,16 +849,38 @@ public class MainMapActivity extends AbstractMapActivity implements
         builder.create().show();
     }
 
-    private void deletePlace(int id){
+    protected void editPlace(int id){
+        Place placeToEdit = getPlaceFromLoadedPlacesById(id);
+        new EditPinDialog(this, placeToEdit, this).show();
+    }
+
+    protected void deletePlace(int id){
         // Delete place from database.
         db.deletePlace(id);
 
+        removeSelectedMarker();
+
+        reloadItems();
+    }
+
+    protected void removeSelectedMarker(){
         // Remove marker and polyline from map.
         if(selectedMarker!=null) selectedMarker.remove();
         if(currentPolyline!=null) currentPolyline.remove();
         // Set selected marker's id to 0 (there is no item with id 0).
         selectedID = 0;
+    }
 
+    public Place getPlaceFromLoadedPlacesById(int id) throws NoSuchElementException{
+        for(Place p : loadedPlaces){
+            if(p.getId() == id){
+                return p;
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    protected void reloadItems(){
         // Clear instructions list.
         instructionsAdapter.clear();
         instructionsAdapter.notifyDataSetChanged();

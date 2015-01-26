@@ -69,6 +69,14 @@ public class EditPinDialog {
         final Spinner spinner = (Spinner) infoView.findViewById(R.id.categories_spinner);
         loadSpinnerData(spinner);
 
+        //If place has an id, then its edit action.
+        if(mPlace.getId()>0){
+            titleEdit.setText(mPlace.getTitle());
+
+            if(mPlace.getDescription()!=null)
+                descriptionEdit.setText(mPlace.getDescription());
+        }
+
 //        dTitle.setText("Πληροφορίες");
 //        title.setText("Αναλυτικές Πληροφορίες");
 
@@ -124,13 +132,20 @@ public class EditPinDialog {
         // Spinner Drop down elements
         List<Category> categories = db.getAllCategories();
 
-        // Default selected category is the first one.
-        mPlace.setCategory_id(categories.get(0).getId());
-
         CategoryAdapter adapter = new CategoryAdapter(categories, mContext);
 
         // apply the Adapter:
         s.setAdapter(adapter);
+
+        // Set default selection.
+        // If place has an id, then its edit action.
+        if(mPlace.getId()>0){
+            s.setSelection(adapter.getItemPositionById(mPlace.getCategory_id()));
+        }
+        else{
+            // Default selected category is the first one.
+            mPlace.setCategory_id(categories.get(0).getId());
+        }
 
         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             /**
