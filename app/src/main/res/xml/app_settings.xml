@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/preferences">
+
+        <ListPreference
+            android:title="@string/language"
+            android:summary="@string/placeholder"
+            android:key="language"
+            android:defaultValue="en"
+            android:entries="@array/languages"
+            android:entryValues="@array/language_codes" />
+        <ListPreference
+            android:title="@string/units"
+            android:summary="@string/placeholder"
+            android:key="unit"
+            android:defaultValue="metric"
+            android:entries="@array/units"
+            android:entryValues="@array/unit_values" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

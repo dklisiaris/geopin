@@ -48,5 +48,13 @@
     <string name="edit">Edit</string>
     <string name="share">Share on Facebook</string>
 
+    <string name="preferences">Preferences</string>
+    <string name="language">Language</string>
+    <string name="greek">Greek (Ελληνικά)</string>
+    <string name="english">English</string>
+
+    <string name="units">Units</string>
+    <string name="metric">Metric (kilometers)</string>
+    <string name="imperial">Imperial (miles)</string>
 
 </resources>

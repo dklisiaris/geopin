@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="action_settings">Ρυθμίσεις</string>
     <string name="error">Σφάλμα! Κάτι δεν πήγε καλά.</string>
     <string name="add_pin">Προσθήκη σημείου</string>
     <string name="edit_pin">Επεξεργασία Σημείου</string>
@@ -18,16 +19,16 @@
     <string name="cancel">Άκυρο</string>
     <string name="save">Αποθήκευση</string>
     <string name="title">Τίτλος</string>
-    <string name="title_hint">Εισάγετε τίτλο...</string>
+    <string name="title_hint">Εισάγετε τίτλο&#8230;</string>
     <string name="description">Περιγραφή</string>
-    <string name="description_hint">Εισάγετε περιγραφή...</string>
+    <string name="description_hint">Εισάγετε περιγραφή&#8230;</string>
     <string name="category">Κατηγορία</string>
     <string name="title_required">Ο τίτλος δεν πρέπει να ειναι κενός.</string>
     <string name="pin_saved">Το σημείο αποθηκεύτηκε με επιτυχία!</string>
     <string name="origin">Αφετηρία</string>
-    <string name="origin_hint">Επιλέξτε αφετηρία...</string>
+    <string name="origin_hint">Επιλέξτε αφετηρία&#8230;</string>
     <string name="destination">Προορισμός</string>
-    <string name="destination_hint">Επιλέξτε προορισμό...</string>
+    <string name="destination_hint">Επιλέξτε προορισμό&#8230;</string>
     <string name="navigation">Πλοήγηση</string>
     <string name="get_instructions">Λήψη οδηγιών</string>
     <string name="tap_origin">Πατήστε στον χάρτη για να επιλέξετε αφετηρία.</string>
@@ -42,5 +43,14 @@
     <string name="delete">Διαγραφή</string>
     <string name="edit">Επεξεργασία</string>
     <string name="share">Δημοσίευση στο Facebook</string>
+
+    <string name="preferences">Προτιμήσεις</string>
+    <string name="language">Γλώσσα (Language)</string>
+    <string name="greek">Ελληνικά</string>
+    <string name="english">Αγγλικά (English)</string>
+
+    <string name="units">Μονάδα Μέτρησης</string>
+    <string name="metric">Χιλιόμετρα</string>
+    <string name="imperial">Μίλια</string>
 
 </resources>

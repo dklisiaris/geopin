@@ -38,8 +38,8 @@ public class DirectionsJSONClient {
     private JSONObject route;
     private JSONObject leg;
 
-    public DirectionsJSONClient(LatLng start, LatLng end, String mode) {
-        String url = makeUrl(start, end, "metric", mode, "el");
+    public DirectionsJSONClient(LatLng start, LatLng end, String mode, String language, String units) {
+        String url = makeUrl(start, end, mode, language, units);
 
         String response = getJSONResponse(url);
 
@@ -132,7 +132,7 @@ public class DirectionsJSONClient {
      * @param language language code: el or en
      * @return
      */
-    private String makeUrl(LatLng start, LatLng end, String units, String mode, String language){
+    private String makeUrl(LatLng start, LatLng end, String mode, String language, String units){
         long time = System.currentTimeMillis()/1000;
 
         StringBuilder urlBuilder = new StringBuilder();

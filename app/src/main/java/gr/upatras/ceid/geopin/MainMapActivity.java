@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -15,6 +16,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.util.Log;
@@ -80,6 +82,7 @@ import gr.upatras.ceid.geopin.db.models.Category;
 import gr.upatras.ceid.geopin.db.models.Place;
 import gr.upatras.ceid.geopin.dialogs.EditPinDialog;
 import gr.upatras.ceid.geopin.dialogs.EditPinDialog.SubmitListener;
+import gr.upatras.ceid.geopin.helpers.LanguageHelper;
 import gr.upatras.ceid.geopin.maps.AbstractMapActivity;
 import gr.upatras.ceid.geopin.maps.DirectionsJSONClient;
 import gr.upatras.ceid.geopin.maps.DirectionsXMLClient;
@@ -103,9 +106,11 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     private static final String STATE_NAV="nav";
 
-    private static final String[] DIRECTION_MODE_NAMES  = {"Αυτοκίνητο","Πεζός","Λεωφορείο"};
-    private static final String[] DIRECTION_MODES_TYPES = {DirectionsXMLClient.MODE_DRIVING,
-            DirectionsXMLClient.MODE_WALKING, DirectionsXMLClient.MODE_TRANSIT};
+    private static final String[] DIRECTION_MODES_TYPES = {
+            DirectionsJSONClient.MODE_DRIVING,
+            DirectionsJSONClient.MODE_WALKING,
+            DirectionsJSONClient.MODE_TRANSIT
+    };
 
     private static final int ACTION_NONE            = 0;
     private static final int ACTION_NEW_PIN         = 1;
@@ -114,7 +119,10 @@ public class MainMapActivity extends AbstractMapActivity implements
 
 //    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
 
-    protected String directionMode                          = DirectionsXMLClient.MODE_DRIVING;
+    protected String directionMode  = DirectionsJSONClient.MODE_DRIVING;
+    protected String language       = "en";
+    protected String units          = "metric";
+
     private GoogleMap map                                   = null;
     private OnLocationChangedListener mapLocationListener   = null;
     private LocationManager locMgr                          = null;
@@ -148,7 +156,8 @@ public class MainMapActivity extends AbstractMapActivity implements
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-//        setContentView(R.layout.activity_main_map);
+
+        applySettings();
 
         if (readyToGo()) {
             setContentView(R.layout.activity_main_map);
@@ -207,7 +216,6 @@ public class MainMapActivity extends AbstractMapActivity implements
                 @Override
                 public void onPanelAnchored(View panel) {
                     //Log.i(TAG, "onPanelAnchored");
-
                 }
 
                 @Override
@@ -362,7 +370,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu (Menu menu) {
-        MenuItem visibility = menu.findItem(R.id.showHide);
+        MenuItem visibility = menu.findItem(R.id.action_show_hide);
         if (isClear) {
             visibility.setIcon(R.drawable.ic_action_action_visibility_off);
             visibility.setTitle(R.string.show_pins);
@@ -380,13 +388,13 @@ public class MainMapActivity extends AbstractMapActivity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            case R.id.addPin:
+            case R.id.action_add_pin:
                 capturePinLocation();
                 return true;
-            case R.id.showHide:
+            case R.id.action_show_hide:
                 togglePinsVisibility();
                 return true;
-            case R.id.get_directions:
+            case R.id.action_get_directions:
                 if(directionsPanel!=null){
                     if(!directionsPanel.isPanelAnchored())
                         directionsPanel.anchorPanel();
@@ -395,10 +403,19 @@ public class MainMapActivity extends AbstractMapActivity implements
                 }
                 return true;
             case R.id.action_settings:
+                Intent i = new Intent(this, SettingsActivity.class);
+                startActivity(i);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void applySettings(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        language = sharedPreferences.getString("language", "en");
+        units = sharedPreferences.getString("unit", "metric");
+        new LanguageHelper(this, language);
     }
 
     /**
@@ -768,11 +785,17 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @SuppressWarnings("deprecation")
     private void initListNav() {
+        String[] directionModeNames  = {
+                getString(R.string.by_car),
+                getString(R.string.by_foot),
+                getString(R.string.by_transport)
+        };
+
         ArrayList<String> items = new ArrayList<>();
         ArrayAdapter<String> nav;
         ActionBar bar = getSupportActionBar();
 
-        for (String m : DIRECTION_MODE_NAMES) {
+        for (String m : directionModeNames) {
             items.add(m);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -986,7 +1009,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         @Override
         protected RouteInfo doInBackground(LatLng... params) {
-            DirectionsJSONClient djc = new DirectionsJSONClient(params[0], params[1], directionMode);
+            DirectionsJSONClient djc = new DirectionsJSONClient(params[0], params[1], directionMode, language, units);
             RouteInfo routeInfo = djc.getRouteInfo();
 
             return routeInfo;

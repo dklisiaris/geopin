@@ -156,11 +156,6 @@ public class EditPinDialog {
                 Category c = (Category) parent.getItemAtPosition(pos);
                 mPlace.setCategory_id(c.getId());
 
-                Toast.makeText(
-                        mContext,
-                        c.getName()+"'s ID is: "+c.getId(),
-                        Toast.LENGTH_LONG
-                ).show();
             }
 
             public void onNothingSelected(AdapterView parent) {

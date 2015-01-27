@@ -7,4 +7,24 @@
         <item>@string/share</item>
     </string-array>
 
+    <string-array name="languages">
+        <item>@string/english</item>
+        <item>@string/greek</item>
+    </string-array>
+
+    <string-array name="language_codes">
+        <item>en</item>
+        <item>el</item>
+    </string-array>
+
+    <string-array name="units">
+        <item>@string/metric</item>
+        <item>@string/imperial</item>
+    </string-array>
+
+    <string-array name="unit_values">
+        <item>metric</item>
+        <item>imperial</item>
+    </string-array>
+
 </resources>
