@@ -445,13 +445,19 @@ public class MainMapActivity extends AbstractMapActivity implements
      * Called on button click to enable location capturing for the starting point.
      * @param v
      */
-    public void captureOriginLocation(View v){enableLocationCapture(ACTION_GET_ORIGIN);}
+    public void captureOriginLocation(View v){
+        if(directionsPanel.isPanelExpanded())directionsPanel.anchorPanel();
+        enableLocationCapture(ACTION_GET_ORIGIN);
+    }
 
     /**
      * Called on button click to enable location capturing for the destination point.
      * @param v
      */
-    public void captureDestinationLocation(View v){enableLocationCapture(ACTION_GET_DESTINATION);}
+    public void captureDestinationLocation(View v){
+        if(directionsPanel.isPanelExpanded())directionsPanel.anchorPanel();
+        enableLocationCapture(ACTION_GET_DESTINATION);
+    }
 
     public void enableLocationCapture(int action){
         expectingLocation = true;
@@ -478,6 +484,7 @@ public class MainMapActivity extends AbstractMapActivity implements
     }
 
     public void receiveInstructions(View v){receiveInstructions();}
+
     public void receiveInstructions(){
         AutoCompleteTextView origin = (AutoCompleteTextView)findViewById(R.id.origin_edit);
         AutoCompleteTextView destination = (AutoCompleteTextView)findViewById(R.id.destination_edit);
@@ -499,6 +506,13 @@ public class MainMapActivity extends AbstractMapActivity implements
                 setDestinationFromAddress(destination.getText().toString());
             }
         }
+    }
+
+    public void receiveInstructions(Marker marker){
+        LatLng from = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+        LatLng[] fromTo = {from, marker.getPosition()};
+        new DirectionsLoader().execute(fromTo);
+        directionsPanel.anchorPanel();
     }
 
     public void setOriginFromAddress(String address){
@@ -626,6 +640,9 @@ public class MainMapActivity extends AbstractMapActivity implements
             }
 
         }
+        else{
+            removeSelectedMarker();
+        }
     }
 
     /**
@@ -667,8 +684,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     @Override
     public boolean onClusterItemClick(PlaceMarker placeMarker) {
-        if(selectedMarker != null)
-            selectedMarker.remove();
+        removeSelectedMarker();
         selectedMarker = map.addMarker(new MarkerOptions()
                 .position(placeMarker.getPosition())
                 .title(placeMarker.getTitle())
@@ -676,10 +692,6 @@ public class MainMapActivity extends AbstractMapActivity implements
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         selectedMarker.showInfoWindow();
         selectedID=placeMarker.getId();
-
-        LatLng from = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-        LatLng[] fromTo = {from, placeMarker.getPosition()};
-        new DirectionsLoader().execute(fromTo);
 
         return false;
     }
@@ -859,7 +871,8 @@ public class MainMapActivity extends AbstractMapActivity implements
                             case 1:
                                 editPlace(selectedID);
                                 break;
-                            case 2:  Log.d("Option Clicked", ": Instructions");
+                            case 2:
+                                receiveInstructions(selectedMarker);
                                 break;
                             case 3:  Log.d("Option Clicked", ": Share");
                                 break;
@@ -1053,10 +1066,14 @@ public class MainMapActivity extends AbstractMapActivity implements
                 selectedMarker.hideInfoWindow();
                 String snip = selectedMarker.getSnippet();
 
-                selectedMarker.setSnippet(snip+ ", Απόσταση: "+String.format(Locale.ENGLISH, "%.1f", dist)+" χλμ. Χρόνος Άφιξης: "+
-                        durat+" λεπτα");
+                selectedMarker.setSnippet(snip+ ", " +
+                        getString(R.string.distance)+ ": " + routeInfo.getDistanceText() + ", " +
+                        getString(R.string.arrival_time) + ": " + routeInfo.getDurationText());
                 selectedMarker.showInfoWindow();
             }
+
+            ((AutoCompleteTextView)findViewById(R.id.origin_edit)).setText(routeInfo.getStartAddress());
+            ((AutoCompleteTextView)findViewById(R.id.destination_edit)).setText(routeInfo.getEndAddress());
 
             origin_position=null;
             destination_position=null;
