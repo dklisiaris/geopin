@@ -32,4 +32,5 @@ dependencies {
     }
     compile 'com.sothree.slidinguppanel:library:2.0.4'
     compile 'com.github.machinarius:preferencefragment:0.1.1'
+    compile 'com.facebook.android:facebook-android-sdk:3.21.1'
 }

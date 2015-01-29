@@ -35,6 +35,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AppEventsLogger;
+import com.facebook.UiLifecycleHelper;
+import com.facebook.widget.FacebookDialog;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -116,6 +119,9 @@ public class MainMapActivity extends AbstractMapActivity implements
     private static final int ACTION_NEW_PIN         = 1;
     private static final int ACTION_GET_ORIGIN      = 2;
     private static final int ACTION_GET_DESTINATION = 3;
+
+    private static final String FACEBOOK_APP_ID = "938475192837084";
+    private UiLifecycleHelper uiHelper;
 
 //    private static final String[] CATEGORIES= {"Καφετέρειες", "Σπιτια", "Σουβλακια", "Άλλο"};
 
@@ -272,6 +278,9 @@ public class MainMapActivity extends AbstractMapActivity implements
                     !locMgr.isProviderEnabled( LocationManager.NETWORK_PROVIDER ) ) {
                 buildAlertMessageNoGps();
             }
+
+            uiHelper = new UiLifecycleHelper(this, null);
+            uiHelper.onCreate(savedInstanceState);
         }
         else{
             Log.e("NEARBY", "Error! Something is missing!");
@@ -284,11 +293,14 @@ public class MainMapActivity extends AbstractMapActivity implements
     @Override
     public void onResume() {
         super.onResume();
+        uiHelper.onResume();
 
         String provider=null;
         for(String s : locMgr.getProviders(true)){
             Log.d("PROVIDERS",s);
         }
+        // Logs 'install' and 'app activate' App Events.
+        AppEventsLogger.activateApp(this,FACEBOOK_APP_ID);
 
         if(locMgr != null)
         {
@@ -351,13 +363,17 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         if(alert != null) { alert.dismiss(); }
 
+        // Logs 'app deactivate' App Event.
+        AppEventsLogger.deactivateApp(this,FACEBOOK_APP_ID);
         super.onPause();
+        uiHelper.onPause();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Crouton.cancelAllCroutons();
+        uiHelper.onDestroy();
     }
 
 
@@ -409,6 +425,24 @@ public class MainMapActivity extends AbstractMapActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        uiHelper.onActivityResult(requestCode, resultCode, data, new FacebookDialog.Callback() {
+            @Override
+            public void onError(FacebookDialog.PendingCall pendingCall, Exception error, Bundle data) {
+                Log.e("Activity", String.format("Error: %s", error.toString()));
+            }
+
+            @Override
+            public void onComplete(FacebookDialog.PendingCall pendingCall, Bundle data) {
+                Log.i("Activity", "Success!");
+            }
+        });
     }
 
     public void applySettings(){
@@ -874,7 +908,8 @@ public class MainMapActivity extends AbstractMapActivity implements
                             case 2:
                                 receiveInstructions(selectedMarker);
                                 break;
-                            case 3:  Log.d("Option Clicked", ": Share");
+                            case 3:
+                                shareOnFacebook(selectedMarker);
                                 break;
                             default:
                                 break;
@@ -897,6 +932,18 @@ public class MainMapActivity extends AbstractMapActivity implements
         removeSelectedMarker();
 
         reloadItems();
+    }
+
+    protected void shareOnFacebook(Marker marker){
+        FacebookDialog shareDialog = new FacebookDialog.ShareDialogBuilder(MainMapActivity.this)
+                .setLink("http://maps.google.com/maps?z=15&t=m&q=loc:"+marker.getPosition().latitude+"+"+marker.getPosition().longitude)
+                .setName(marker.getTitle())
+                .setCaption(marker.getTitle())
+                .setDescription(marker.getSnippet())
+                .setApplicationName("Geopin")
+                .setPicture("https://dl.dropboxusercontent.com/u/4888041/geopin_logo.png")
+                .build();
+        uiHelper.trackPendingDialogCall(shareDialog.present());
     }
 
     protected void removeSelectedMarker(){
