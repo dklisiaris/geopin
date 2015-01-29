@@ -35,7 +35,7 @@
         android:uiOptions="splitActionBarWhenNarrow"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainMapActivity"
+            android:name="gr.upatras.ceid.geopin.MainMapActivity"
             android:label="@string/app_name"
             android:configChanges="locale" >
             <intent-filter>
@@ -45,10 +45,10 @@
         </activity>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name="gr.upatras.ceid.geopin.SettingsActivity"
             android:label="@string/action_settings"
             android:configChanges="locale"
-            android:parentActivityName=".MainMapActivity" >
+            android:parentActivityName="gr.upatras.ceid.geopin.MainMapActivity" >
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -60,6 +60,12 @@
             android:value="AIzaSyDIAO7wsqBy6wo3ltvzjbwovLEaMtPSYz4" />
         <meta-data android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"/>
+
+        <activity
+            android:name="com.facebook.LoginActivity"
+            android:label="@string/app_name">
+        </activity>
+
     </application>
 
 </manifest>
