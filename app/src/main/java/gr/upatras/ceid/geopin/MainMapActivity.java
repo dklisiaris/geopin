@@ -1204,7 +1204,7 @@ public class MainMapActivity extends AbstractMapActivity implements
         @Override
         protected LatLng doInBackground(String... params) {
             String uri = "http://maps.google.com/maps/api/geocode/json?address=" +
-                    params[0] + "&sensor=false&language=el";
+                    params[0] + "&sensor=false&language="+language;
 
             HttpGet httpGet = new HttpGet(uri);
             HttpClient client = new DefaultHttpClient();
