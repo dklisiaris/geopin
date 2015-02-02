@@ -37,7 +37,6 @@ public class DirectionsXMLClient {
                 + "&sensor=false&units=metric&mode="+mode+"&language=el"+depTime;
         //Log.d("api link", url);
 
-        //http://stackoverflow.com/questions/19290593/displaying-multiple-routes-using-directions-api-in-android/19329951#19329951
         //http://maps.googleapis.com/maps/api/directions/xml?origin=37.9756556,23.7339464&destination=38.0005619,23.741028&sensor=false&units=metric&mode=driving&language=el
 
         try {

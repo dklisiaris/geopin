@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
+import android.text.Html;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -142,6 +143,7 @@ public class MainMapActivity extends AbstractMapActivity implements
     protected List<Place> loadedPlaces                  = null;
     protected Polyline currentPolyline                  = null;
     protected Marker selectedMarker                     = null;
+    protected List<Marker> navPoints                    = null;
     protected SparseArray<String> sparse                = null;
     protected SparseArray<Float> colors                 = null;
     protected ArrayList<String> selectedCategories      = null;
@@ -956,6 +958,7 @@ public class MainMapActivity extends AbstractMapActivity implements
         // Remove marker and polyline from map.
         if(selectedMarker!=null) selectedMarker.remove();
         if(currentPolyline!=null) currentPolyline.remove();
+        clearNavPoints();
         // Set selected marker's id to 0 (there is no item with id 0).
         selectedID = 0;
     }
@@ -979,6 +982,15 @@ public class MainMapActivity extends AbstractMapActivity implements
         // Clear and reload cluster items.
         mClusterManager.clearItems();
         onResume();
+    }
+
+    protected void clearNavPoints(){
+        if (navPoints!=null) {
+            for (Marker m : navPoints) {
+                m.remove();
+            }
+            navPoints.clear();
+        }
     }
 
 
@@ -1130,6 +1142,17 @@ public class MainMapActivity extends AbstractMapActivity implements
 
             origin_position=null;
             destination_position=null;
+
+            clearNavPoints();
+            if(navPoints==null) navPoints = new ArrayList<>();
+            for(Step step : routeInfo.getSteps().subList(1, routeInfo.getSteps().size())){
+
+                Marker navPoint = map.addMarker(new MarkerOptions()
+                        .position(step.getStartLocation())
+                        .title(Html.fromHtml(step.getHtmlInstructions()).toString())
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                navPoints.add(navPoint);
+            }
         }
 
     }
