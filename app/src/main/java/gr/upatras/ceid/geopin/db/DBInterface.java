@@ -14,7 +14,10 @@ public interface DBInterface {
     static final String COLUMN_CATEGORY_ID = "category_id";
 
     static final String TABLE_CATEGORIES = "categories";
-    static final String COLUMN_NAME = "name";
     static final String COLUMN_COLOR = "color";
+
+    static final String TABLE_CATEGORY_TRANSLATIONS = "category_translations";
+    static final String COLUMN_NAME = "name";
+    static final String COLUMN_LANGUAGE = "language";
 
 }

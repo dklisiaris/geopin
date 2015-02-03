@@ -54,6 +54,14 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
                 + COLUMN_NAME + " VARCHAR NOT NULL,"
                 + COLUMN_COLOR + " VARCHAR);";
 
+        String CREATE_CATEGORY_TRANSLATIONS_TABLE = "CREATE TABLE " +
+                TABLE_CATEGORY_TRANSLATIONS + "("
+                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_NAME + " VARCHAR NOT NULL,"
+                + COLUMN_LANGUAGE + " VARCHAR NOT NULL,"
+                + " FOREIGN KEY ("+COLUMN_CATEGORY_ID+") REFERENCES "+TABLE_CATEGORIES+" ("+COLUMN_ID+"));";
+
+
 //        String INSERT_CATEGORIES = "INSERT INTO "+
 //                TABLE_CATEGORIES +
 //                " SELECT 'Cafe' AS " + COLUMN_NAME+ ", '0xf44336' AS " + COLUMN_COLOR +
@@ -83,6 +91,7 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         db.beginTransaction();
         try {
             db.execSQL(CREATE_CATEGORIES_TABLE);
+            db.execSQL(CREATE_CATEGORY_TRANSLATIONS_TABLE);
             db.execSQL(INSERT_CATEGORIES);
             db.execSQL(CREATE_PLACES_TABLE);
             db.setTransactionSuccessful();
