@@ -421,6 +421,10 @@ public class MainMapActivity extends AbstractMapActivity implements
                 return true;
             case R.id.action_settings:
                 Intent i = new Intent(this, SettingsActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putDouble("latitude", currentLocation.getLatitude());
+                bundle.putDouble("longitude", currentLocation.getLongitude());
+                i.putExtras(bundle);
                 startActivity(i);
                 return true;
             default:
@@ -1069,7 +1073,7 @@ public class MainMapActivity extends AbstractMapActivity implements
             setSupportProgressBarIndeterminateVisibility(false);
             mClusterManager.cluster();
             t2 = (System.nanoTime() - t1)/1000000.0;
-            Log.d("---- Marker Loader completed in ----", Double.toString(t2));
+            Log.d("Loader completed in", Double.toString(t2));
         }
 
 
@@ -1169,7 +1173,7 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         @Override
         protected String doInBackground(Double... params) {
-            Geocoder geocoder = new Geocoder(mContext);
+            Geocoder geocoder = new Geocoder(mContext, new Locale(language));
             latitude = params[0].doubleValue();
             longitude = params[1].doubleValue();
 

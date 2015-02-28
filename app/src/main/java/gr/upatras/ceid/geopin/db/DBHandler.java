@@ -91,7 +91,7 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         db.beginTransaction();
         try {
             db.execSQL(CREATE_CATEGORIES_TABLE);
-            db.execSQL(CREATE_CATEGORY_TRANSLATIONS_TABLE);
+//            db.execSQL(CREATE_CATEGORY_TRANSLATIONS_TABLE);
             db.execSQL(INSERT_CATEGORIES);
             db.execSQL(CREATE_PLACES_TABLE);
             db.setTransactionSuccessful();
@@ -212,14 +212,14 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
         values.put(DBInterface.COLUMN_CATEGORY_ID, p.getCategory_id());
 
         if(p.getId()>0){
-            Log.d("DB UPDATE", "Place #"+p.getId()+" Updated!");
+//            Log.d("DB UPDATE", "Place #"+p.getId()+" Updated!");
             record_id = db.update(DBInterface.TABLE_PLACES, values, DBInterface.COLUMN_ID + " = ?", new String[] { Integer.toString(p.getId()) });
         }
         else{
             record_id = db.insert(DBInterface.TABLE_PLACES,null, values);
-            Log.d("DB UPDATE", "Place #"+p.getId()+" Inserted!");
+//            Log.d("DB UPDATE", "Place #"+p.getId()+" Inserted!");
         }
-        Log.d("DB UPDATE", "Run...");
+//        Log.d("DB UPDATE", "Run...");
         db.close();
 
         return record_id;
@@ -344,8 +344,8 @@ public class DBHandler extends SQLiteOpenHelper implements DBInterface {
                     randomCategory.getId());
 
             insertOrReplacePlace(p);
-            Log.d("Generated Place", p.toString());
-            Log.d("Iteration #", Integer.toString(places_num));
+//            Log.d("Generated Place", p.toString());
+//            Log.d("Iteration #", Integer.toString(places_num));
         }
     }
 }

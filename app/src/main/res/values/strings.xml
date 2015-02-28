@@ -59,4 +59,9 @@
     <string name="metric">Metric (kilometers)</string>
     <string name="imperial">Imperial (miles)</string>
 
+    <string name="generate_pins">Generate Pins</string>
+    <string name="no_current_location">Current Location didn\'t found.</string>
+    <string name="wait">Wait&#8230;</string>
+    <string name="pins_generated">Pins generated successfully!</string>
+
 </resources>

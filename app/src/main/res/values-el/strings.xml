@@ -53,4 +53,9 @@
     <string name="metric">Χιλιόμετρα</string>
     <string name="imperial">Μίλια</string>
 
+    <string name="generate_pins">Δημιουργία Τυχαίων Σημείων</string>
+    <string name="no_current_location">Δεν βρέθηκε η τωρινή τοποθεσία σας.</string>
+    <string name="wait">Περιμένετε&#8230;</string>
+    <string name="pins_generated">Τα σημεία δημιουργήθηκαν επιτυχώς!</string>
+
 </resources>

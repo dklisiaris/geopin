@@ -11,7 +11,7 @@
         android:icon="@drawable/ic_action_action_visibility"
         android:title="@string/hide_pins"
         android:orderInCategory="2"
-        app:showAsAction="ifRoom|withText"/>
+        app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_get_directions"
         android:icon="@drawable/ic_action_directions"
         android:title="@string/get_instructions"
