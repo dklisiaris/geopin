@@ -770,10 +770,10 @@ public class MainMapActivity extends AbstractMapActivity implements
 
         // call resume to reload items
         onResume();
-
+//
 //        DataFactory df = new DataFactory();
 //        Toast.makeText(this, "DF: "+df.getName()+" "+df.getBusinessName()+" "+df.getRandomWord()+" "+df.getRandomChars(8), Toast.LENGTH_LONG).show();
-
+//
 //        db.generateAndStorePlaces(5, 37.9756556, 23.7339464, 10000 );
 //        List<Place> places = db.getAllPlaces();
 //        for(Place p : places){
@@ -978,10 +978,14 @@ public class MainMapActivity extends AbstractMapActivity implements
 
     protected void reloadItems(){
         // Clear instructions list.
-        instructionsAdapter.clear();
-        instructionsAdapter.notifyDataSetChanged();
-        instructionsList.setAdapter(null);
-        instructionsList.removeHeaderView(instructionsHeader);
+        if(instructionsAdapter!=null){
+            instructionsAdapter.clear();
+            instructionsAdapter.notifyDataSetChanged();
+        }
+        if(instructionsList!=null){
+            instructionsList.setAdapter(null);
+            instructionsList.removeHeaderView(instructionsHeader);
+        }
 
         // Clear and reload cluster items.
         mClusterManager.clearItems();
