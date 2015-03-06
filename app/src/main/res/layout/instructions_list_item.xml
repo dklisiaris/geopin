@@ -1,41 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="22dp"
-    android:paddingRight="22dp"
+    android:paddingLeft="@dimen/padding_left"
+    android:paddingStart="@dimen/padding_left"
+    android:paddingRight="@dimen/padding_right"
+    android:paddingEnd="@dimen/padding_right"
     android:paddingTop="6dp"
     android:paddingBottom="6dp"
+    android:weightSum="1.0"
     >
 
     <TextView
         android:id="@+id/instruction"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
+        android:layout_weight=".80"
+        android:layout_gravity="center_vertical"
         android:fontFamily="sans-serif"
         android:textColor="@color/purple"
-        android:textSize="18sp"
+        android:textSize="@dimen/left_text_size"
         android:text="@string/placeholder"
         />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true">
+        android:layout_weight=".20"
+        android:orientation="vertical"        
+        >
 
         <TextView
             android:id="@+id/duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
             android:fontFamily="sans-serif"
             android:textColor="@color/purple"
-            android:textSize="16sp"
+            android:textSize="@dimen/right_text_size"
             android:text="@string/placeholder"
             />
 
@@ -43,11 +46,12 @@
             android:id="@+id/distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
             android:fontFamily="sans-serif"
             android:textColor="@color/purple"
-            android:textSize="16sp"
+            android:textSize="@dimen/right_text_size"
             android:text="@string/placeholder"
             />
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

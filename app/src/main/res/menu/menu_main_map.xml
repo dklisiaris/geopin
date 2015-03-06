@@ -7,14 +7,15 @@
         android:title="@string/add_pin"
         android:orderInCategory="1"
         app:showAsAction="ifRoom"/>
-    <item android:id="@+id/action_show_hide"
-        android:icon="@drawable/ic_action_action_visibility"
-        android:title="@string/hide_pins"
-        android:orderInCategory="2"
-        app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_get_directions"
         android:icon="@drawable/ic_action_directions"
         android:title="@string/get_instructions"
+        android:orderInCategory="2"
+        app:showAsAction="ifRoom"/>
+    
+    <item android:id="@+id/action_show_hide"
+        android:icon="@drawable/ic_action_action_visibility"
+        android:title="@string/hide_pins"
         android:orderInCategory="3"
         app:showAsAction="ifRoom"/>
 

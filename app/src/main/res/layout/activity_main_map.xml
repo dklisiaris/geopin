@@ -2,10 +2,11 @@
 <com.sothree.slidinguppanel.SlidingUpPanelLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="40dp"
+    android:layout_marginBottom="@dimen/sliding_up_panel_margin_bottom"
     android:gravity="bottom"
     android:layout_gravity="bottom"
     sothree:shadowHeight="4dp" >
@@ -33,7 +34,8 @@
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            class="com.google.android.gms.maps.SupportMapFragment"/>
+            class="com.google.android.gms.maps.SupportMapFragment"
+            tools:layout="@layout/abc_screen_simple" />
 
     </LinearLayout>
 
@@ -49,8 +51,8 @@
             android:background="@color/purple"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp" >
+            android:paddingTop="@dimen/panel_top_padding"
+            android:paddingBottom="@dimen/panel_top_padding" >
 
             <TextView
                 android:id="@+id/navigation_label"
@@ -61,7 +63,7 @@
                 android:fontFamily="sans-serif-thin"
                 android:text="@string/navigation"
                 android:textColor="#f3f3f3"
-                android:textSize="20sp" />
+                android:textSize="@dimen/navigation_label_text_size" />
 
             <ImageView
                 android:id="@+id/collapse_icon"
@@ -93,7 +95,7 @@
                 android:id="@+id/origin_edit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".75"
+                android:layout_weight=".65"
                 android:layout_marginTop="5dp"
                 android:inputType="textCapSentences"
                 android:nextFocusUp="@id/origin_edit"
@@ -105,7 +107,7 @@
                 android:id="@+id/btn_origin_map"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".10"
+                android:layout_weight=".15"
                 android:background="@drawable/btn_success"
                 android:drawableTop="@drawable/ic_action_map"
                 android:paddingLeft="10dp"
@@ -118,7 +120,7 @@
                 android:id="@+id/btn_origin_location"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".10"
+                android:layout_weight=".15"
                 android:background="@drawable/btn_success"
                 android:drawableTop="@drawable/ic_action_location_found"
                 android:paddingLeft="10dp"
@@ -140,7 +142,7 @@
                 android:id="@+id/destination_edit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".75"
+                android:layout_weight=".65"
                 android:layout_marginTop="5dp"
                 android:inputType="textCapSentences"
                 android:nextFocusUp="@id/origin_edit"
@@ -152,7 +154,7 @@
                 android:id="@+id/btn_destination_map"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".10"
+                android:layout_weight=".15"
                 android:background="@drawable/btn_success"
                 android:drawableTop="@drawable/ic_action_map"
                 android:paddingLeft="10dp"
@@ -165,7 +167,7 @@
                 android:id="@+id/btn_destination_location"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".10"
+                android:layout_weight=".15"
                 android:background="@drawable/btn_success"
                 android:drawableTop="@drawable/ic_action_location_found"
                 android:paddingLeft="10dp"
@@ -184,6 +186,7 @@
             android:text="@string/get_instructions"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+            android:textSize="@dimen/navigation_label_text_size"
             android:onClick="receiveInstructions"
             style="@style/Button"
             />
